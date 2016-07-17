@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D9064C2D-7AA1-4043-B49B-F394DD6BFEF5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Urasandesu.Fayle</RootNamespace>
+    <AssemblyName>Urasandesu.Fayle</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.Decompiler, Version=2.3.1.1855, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <HintPath>..\packages\ICSharpCode.Decompiler.2.3.1\lib\Net40\ICSharpCode.Decompiler.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory, Version=5.0.0.0, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <HintPath>..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.Cecil, Version=5.0.0.0, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <HintPath>..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.Cecil.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.CSharp, Version=5.0.0.0, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <HintPath>..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.CSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.Xml, Version=5.0.0.0, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <HintPath>..\packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.Xml.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.3.0.1304.1\lib\Net45\Microsoft.Practices.Unity.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity.Configuration, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unity.3.0.1304.1\lib\Net45\Microsoft.Practices.Unity.Configuration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Z3">
+      <HintPath>..\Lib\Microsoft.Z3.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Domains\Blocks\ExceptionGroup.cs" />
+    <Compile Include="Domains\Blocks\ExceptionGroupTypes.cs" />
+    <Compile Include="Domains\Instructions\SmtDeclarationGroup.cs" />
+    <Compile Include="Domains\Instructions\SmtBranchableAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtNotIndexPlusOutOfRangeAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtNotIndexMinusOutOfRangeAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtIndexPlusOutOfRangeAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtIndexMinusOutOfRangeAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtNotNullReferenceAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtNullReferenceAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtReturnAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtThrowAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtNewAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtConstantAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtConversionAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtSequenceAtAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtSequenceLengthAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtNotBranchAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtBranchAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtSimpleAssertion.cs" />
+    <Compile Include="Domains\Instructions\SmtAssertiveInstruction.cs" />
+    <Compile Include="Domains\Instructions\SmtStackLocationDeclaration.cs" />
+    <Compile Include="Domains\Instructions\SmtLocalDeclaration.cs" />
+    <Compile Include="Domains\Instructions\SmtParameterDeclaration.cs" />
+    <Compile Include="Domains\Instructions\SmtDatatypesDeclaration.cs" />
+    <Compile Include="Domains\Instructions\SmtNormalAssertionFactory.cs" />
+    <Compile Include="Domains\Instructions\ISmtNormalAssertionFactory.cs" />
+    <Compile Include="Domains\Instructions\SmtDeclarativeInstructionFactory.cs" />
+    <Compile Include="Domains\Instructions\ISmtDeclarativeInstructionFactory.cs" />
+    <Compile Include="Domains\Z3\Z3SeqExpr.cs" />
+    <Compile Include="Domains\Z3\Z3ReExpr.cs" />
+    <Compile Include="Domains\Z3\Z3FPRMNum.cs" />
+    <Compile Include="Domains\Z3\Z3FPRMExpr.cs" />
+    <Compile Include="Domains\Z3\Z3FPNum.cs" />
+    <Compile Include="Domains\Z3\Z3FPExpr.cs" />
+    <Compile Include="Domains\Z3\Z3FiniteDomainNum.cs" />
+    <Compile Include="Domains\Z3\Z3FiniteDomainExpr.cs" />
+    <Compile Include="Domains\Z3\Z3DatatypeExpr.cs" />
+    <Compile Include="Domains\Z3\Z3Quantifier.cs" />
+    <Compile Include="Domains\Z3\Z3BoolExpr.cs" />
+    <Compile Include="Domains\Z3\Z3BitVecNum.cs" />
+    <Compile Include="Domains\Z3\Z3BitVecExpr.cs" />
+    <Compile Include="Domains\Z3\Z3ArrayExpr.cs" />
+    <Compile Include="Domains\Z3\Z3RatNum.cs" />
+    <Compile Include="Domains\Z3\Z3RealExpr.cs" />
+    <Compile Include="Domains\Z3\Z3IntNum.cs" />
+    <Compile Include="Domains\Z3\Z3IntExpr.cs" />
+    <Compile Include="Domains\Z3\Z3AlgebraicNum.cs" />
+    <Compile Include="Domains\Z3\Z3ArithExpr.cs" />
+    <Compile Include="Domains\Z3\Z3Expr.cs" />
+    <Compile Include="Domains\Z3\Z3ExprFactory.cs" />
+    <Compile Include="Domains\Z3\IZ3ExprFactory.cs" />
+    <Compile Include="Domains\Z3\IZ3ExprAcceptor.cs" />
+    <Compile Include="Domains\Z3\DotNetObject.cs" />
+    <Compile Include="Domains\Z3\IZ3ExprVisitor.cs" />
+    <Compile Include="Infrastructures\AndSpecification`2.cs" />
+    <Compile Include="Infrastructures\Entity`1.cs" />
+    <Compile Include="Infrastructures\IEntity`1.cs" />
+    <Compile Include="Infrastructures\NumericKeyedEntity`1.cs" />
+    <Compile Include="Infrastructures\INumericKeyedEntity`1.cs" />
+    <Compile Include="Infrastructures\EquatableComparer`1.cs" />
+    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\EquatableSsaVariable.cs" />
+    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\SsaVariableMixin.cs" />
+    <Compile Include="Mixins\Microsoft\Z3\FuncDeclMixin.cs" />
+    <Compile Include="Mixins\Mono\Cecil\TypeDefinitionMixin.cs" />
+    <Compile Include="Mixins\Mono\Cecil\AssemblyDefinitionMixin.cs" />
+    <Compile Include="Mixins\Mono\Cecil\EquatableTypeReference.cs" />
+    <Compile Include="Mixins\Mono\Cecil\EquatableVariableDefinition.cs" />
+    <Compile Include="Mixins\Mono\Cecil\EquatableParameterDefinition.cs" />
+    <Compile Include="Mixins\Mono\Cecil\ParameterDefinitionMixin.cs" />
+    <Compile Include="Mixins\Mono\Cecil\IMetadataTokenProviderMixin.cs" />
+    <Compile Include="Mixins\System\Linq\EnumerableMixin.cs" />
+    <Compile Include="Mixins\Urasandesu\Fayle\Infrastructures\ISpecificationMixin.cs" />
+    <Compile Include="Domains\Instructions\SmtAssertionGroup.cs" />
+    <Compile Include="Infrastructures\NumericKeyedRepository`2.cs" />
+    <Compile Include="Infrastructures\INumericKeyedRepository`2.cs" />
+    <Compile Include="Infrastructures\IRepository`3.cs" />
+    <Compile Include="Infrastructures\IValueObject`1.cs" />
+    <Compile Include="Infrastructures\Index.cs" />
+    <Compile Include="Infrastructures\EquatableIdEntity`2.cs" />
+    <Compile Include="Infrastructures\IEquatableIdEntity`2.cs" />
+    <Compile Include="Infrastructures\NullValueIsMinimumComparer`1.cs" />
+    <Compile Include="Infrastructures\ISpecification.cs" />
+    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\SsaInstructionMixin.cs" />
+    <Compile Include="Mixins\Mono\Cecil\Cil\InstructionMixin.cs" />
+    <Compile Include="Mixins\Mono\Cecil\MemberReferenceMixin.cs" />
+    <Compile Include="Mixins\Urasandesu\Fayle\Infrastructures\ISimpleValidatorMixin.cs" />
+    <Compile Include="Domains\Specs\SmtBlockIsPredecessor.cs" />
+    <Compile Include="Domains\Specs\SmtBlockHasSameParentForm.cs" />
+    <Compile Include="Domains\Specs\SmtInstructionIsDeclaration.cs" />
+    <Compile Include="Domains\Specs\SmtInstructionIsAssertion.cs" />
+    <Compile Include="Domains\Specs\SmtInstructionIsBranchPrecondition.cs" />
+    <Compile Include="Domains\Specs\SmtInstructionIsNormal.cs" />
+    <Compile Include="Domains\Specs\SmtInstructionIsExceptionGuard.cs" />
+    <Compile Include="Domains\Specs\SmtInstructionHasSameParentBlock.cs" />
+    <Compile Include="UnknownMethodResolveParameter.cs" />
+    <Compile Include="IUnknownMethodResolver.cs" />
+    <Compile Include="UnknownMethodResolveResult.cs" />
+    <Compile Include="UnknownMethodResolveEventArgs.cs" />
+    <Compile Include="InterestingInput.cs" />
+    <Compile Include="InterestingInputs.cs" />
+    <Compile Include="Domains\Instructions\SmtDeclarativeInstruction.cs" />
+    <Compile Include="Domains\Instructions\SmtInstruction.cs" />
+    <Compile Include="Domains\Instructions\SmtInstructionId.cs" />
+    <Compile Include="Domains\Instructions\SmtInstructionKind.cs" />
+    <Compile Include="Domains\Instructions\SmtInstructionKindTypes.cs" />
+    <Compile Include="Repositories\SmtInstructionRepository.cs" />
+    <Compile Include="Domains\Instructions\ISmtInstructionRepository.cs" />
+    <Compile Include="Domains\Instructions\SmtInstructionFactory.cs" />
+    <Compile Include="Domains\Instructions\ISmtInstructionFactory.cs" />
+    <Compile Include="Domains\Blocks\SmtBlock.cs" />
+    <Compile Include="Domains\Blocks\SmtBlockId.cs" />
+    <Compile Include="Infrastructures\Identity`1.cs" />
+    <Compile Include="Infrastructures\ISimpleValidator.cs" />
+    <Compile Include="Repositories\SmtBlockRepository.cs" />
+    <Compile Include="Domains\Blocks\ISmtBlockRepository.cs" />
+    <Compile Include="Domains\Blocks\SmtBlockFactory.cs" />
+    <Compile Include="Domains\Blocks\ISmtBlockFactory.cs" />
+    <Compile Include="Domains\Forms\SmtForm.cs" />
+    <Compile Include="Domains\Forms\SmtFormId.cs" />
+    <Compile Include="Repositories\SmtFormRepository.cs" />
+    <Compile Include="Domains\Forms\ISmtFormRepository.cs" />
+    <Compile Include="Domains\Forms\SmtFormFactory.cs" />
+    <Compile Include="Domains\Forms\ISmtFormFactory.cs" />
+    <Compile Include="Domains\Services\FindingInterestingInputsService.cs" />
+    <Compile Include="Domains\Services\IFindingInterestingInputsService.cs" />
+    <Compile Include="Domains\Services\TranspilingToSmtService.cs" />
+    <Compile Include="Domains\Services\ITranspilingToSmtService.cs" />
+    <Compile Include="UnknownMethodNotResolveException.cs" />
+    <Compile Include="Fay.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

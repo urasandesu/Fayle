@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fayle", "fayle\fayle.csproj", "{450AEDE1-8DB6-4AF5-B964-0E7B815C7021}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Urasandesu.Fayle", "Urasandesu.Fayle\Urasandesu.Fayle.csproj", "{D9064C2D-7AA1-4043-B49B-F394DD6BFEF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Urasandesu.Fayle", "Test.Urasandesu.Fayle\Test.Urasandesu.Fayle.csproj", "{A01C28A6-8CB6-4A95-A6C3-A2ED0AE606B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HowDoesPexWork", "HowDoesPexWork\HowDoesPexWork.csproj", "{CC9056FD-762A-489B-A9F6-8829F44AEC70}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{450AEDE1-8DB6-4AF5-B964-0E7B815C7021}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{450AEDE1-8DB6-4AF5-B964-0E7B815C7021}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{450AEDE1-8DB6-4AF5-B964-0E7B815C7021}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{450AEDE1-8DB6-4AF5-B964-0E7B815C7021}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9064C2D-7AA1-4043-B49B-F394DD6BFEF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9064C2D-7AA1-4043-B49B-F394DD6BFEF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9064C2D-7AA1-4043-B49B-F394DD6BFEF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9064C2D-7AA1-4043-B49B-F394DD6BFEF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A01C28A6-8CB6-4A95-A6C3-A2ED0AE606B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A01C28A6-8CB6-4A95-A6C3-A2ED0AE606B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A01C28A6-8CB6-4A95-A6C3-A2ED0AE606B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A01C28A6-8CB6-4A95-A6C3-A2ED0AE606B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC9056FD-762A-489B-A9F6-8829F44AEC70}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{CC9056FD-762A-489B-A9F6-8829F44AEC70}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{CC9056FD-762A-489B-A9F6-8829F44AEC70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC9056FD-762A-489B-A9F6-8829F44AEC70}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
