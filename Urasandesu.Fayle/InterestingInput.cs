@@ -29,11 +29,31 @@
 
 
 
+using System;
+using System.Web.Script.Serialization;
+using Urasandesu.Fayle.Domains.SmtLib;
+using Urasandesu.Fayle.Mixins.Mono.Cecil;
+
 namespace Urasandesu.Fayle
 {
     public class InterestingInput
     {
-        public object Value { get; set; }
+        public InterestingInput(object value, SmtLibStringCollection srcSc, EquatableParameterDefinition srcParam)
+        {
+            if (srcSc == null)
+                throw new ArgumentNullException("srcSc");
+
+            if (srcParam == null)
+                throw new ArgumentNullException("srcParam");
+
+            Value = value;
+            SourceStringCollection = srcSc;
+            SourceParameter = srcParam;
+        }
+
+        public SmtLibStringCollection SourceStringCollection { get; private set; }
+        public EquatableParameterDefinition SourceParameter { get; private set; }
+        public object Value { get; private set; }
 
         public override int GetHashCode()
         {
@@ -51,7 +71,7 @@ namespace Urasandesu.Fayle
 
         public override string ToString()
         {
-            return Value + "";
+            return new JavaScriptSerializer().Serialize(Value);
         }
     }
 }

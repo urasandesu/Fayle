@@ -36,5 +36,6 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
     public static class AssemblyDefinitionMixin
     {
         public static readonly AssemblyDefinition MSCorLib = AssemblyDefinition.ReadAssembly(typeof(object).Module.FullyQualifiedName);
+        public static readonly AssemblyDefinition Fayle = AssemblyDefinition.ReadAssembly(typeof(AssemblyDefinitionMixin).Module.FullyQualifiedName);
     }
 }

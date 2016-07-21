@@ -32,13 +32,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 using Urasandesu.Fayle.Mixins.Urasandesu.Fayle.Infrastructures;
 
 namespace Urasandesu.Fayle.Infrastructures
 {
     public abstract class EquatableIdEntity<TId, TSurrogateKey> : Entity<TId>, IEquatableIdEntity<TId, TSurrogateKey>
-        where TId : IEquatable<TId>, IComparable<TId>, ISimpleValidator
-        where TSurrogateKey : IEquatable<TSurrogateKey>, IComparable<TSurrogateKey>, ISimpleValidator
+        where TId : IEquatable<TId>, IComparable<TId>, IIdentityValidator
+        where TSurrogateKey : IEquatable<TSurrogateKey>, IComparable<TSurrogateKey>, IIdentityValidator
     {
         protected virtual TId IdCore { get; set; }
         public sealed override TId Id
@@ -46,7 +47,7 @@ namespace Urasandesu.Fayle.Infrastructures
             get { return IdCore; }
             set
             {
-                Debug.Assert(!IdCore.IsValidOnValidated());
+                Debug.Assert(IdCore == null || !IdCore.IsValidOnValidated(), "'Id' can only set when it is uninitialized.", "at {0}", GetType());
                 IdCore = value;
             }
         }
@@ -57,7 +58,7 @@ namespace Urasandesu.Fayle.Infrastructures
             get { return SurrogateKeyCore; }
             set
             {
-                Debug.Assert(!SurrogateKeyCore.IsValidOnValidated());
+                Debug.Assert(IdCore == null || !SurrogateKeyCore.IsValidOnValidated(), "'SurrogateKey' can only set when it is uninitialized.", "at {0}", GetType());
                 SurrogateKeyCore = value;
             }
         }
@@ -97,8 +98,8 @@ namespace Urasandesu.Fayle.Infrastructures
             return !(lhs == rhs);
         }
 
-        static readonly IComparer<IEquatableIdEntity<TId, TSurrogateKey>> m_defaultComparer = NullValueIsMinimumComparer<IEquatableIdEntity<TId, TSurrogateKey>>.Make(_ => _.Id);
-        public static IComparer<IEquatableIdEntity<TId, TSurrogateKey>> DefaultComparer { get { return m_defaultComparer; } }
+        static readonly IComparer<IEquatableIdEntity<TId, TSurrogateKey>> ms_defaultComparer = NullValueIsMinimumComparer<IEquatableIdEntity<TId, TSurrogateKey>>.Make(_ => _.Id);
+        public static IComparer<IEquatableIdEntity<TId, TSurrogateKey>> DefaultComparer { get { return ms_defaultComparer; } }
 
         public int CompareTo(IEquatableIdEntity<TId, TSurrogateKey> other)
         {

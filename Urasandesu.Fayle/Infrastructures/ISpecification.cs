@@ -31,7 +31,7 @@
 
 namespace Urasandesu.Fayle.Infrastructures
 {
-    public interface ISpecification
+    public interface ISpecification : IValueObject
     {
         bool IsSatisfiedBy(object obj);
     }

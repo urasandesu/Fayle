@@ -37,11 +37,14 @@ namespace Urasandesu.Fayle.Mixins.Urasandesu.Fayle.Infrastructures
     public static class ISpecificationMixin
     {
         public static AndSpecification<TLeftSpec, TRightSpec> And<TLeftSpec, TRightSpec>(this TLeftSpec lhs, TRightSpec rhs)
-            where TLeftSpec : ISpecification, IValueObject<TLeftSpec>
-            where TRightSpec : ISpecification, IValueObject<TRightSpec>
+            where TLeftSpec : ISpecification
+            where TRightSpec : ISpecification
         {
             if (lhs == null)
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException("lhs");
+
+            if (rhs == null)
+                throw new ArgumentNullException("rhs");
 
             return new AndSpecification<TLeftSpec, TRightSpec>(lhs, rhs);
         }

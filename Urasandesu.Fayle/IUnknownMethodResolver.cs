@@ -33,7 +33,7 @@ namespace Urasandesu.Fayle
 {
     public interface IUnknownMethodResolver
     {
-        void Resolve(UnknownMethodResolveParameter param);
+        bool Resolve(UnknownMethodResolveParameter param);
     }
 }
 

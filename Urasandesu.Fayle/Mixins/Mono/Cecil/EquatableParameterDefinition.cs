@@ -31,24 +31,74 @@
 
 using Mono.Cecil;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
 {
-    public class EquatableParameterDefinition : IComparable
+    public class EquatableParameterDefinition : IComparable, IEquatableVariable
     {
-        public EquatableParameterDefinition(ParameterDefinition source)
+        public EquatableParameterDefinition(ParameterDefinition source, MethodReference method)
         {
             if (source == null)
                 throw new ArgumentNullException("source");
 
-            Source = source;
+            Index = source.Index;
+            Sequence = source.Sequence;
+            ParameterType = new EquatableTypeReference(source.ParameterType);
+            Name = source.Name;
+            Method = new EquatableMethodReference(method);
         }
 
-        public ParameterDefinition Source { get; private set; }
+        public EquatableParameterDefinition(int index, TypeReference paramType, string name, MethodReference method)
+        {
+            if (index < -1)
+                throw new ArgumentOutOfRangeException("index", index, "The parameter must be greater than or equal to -1.");
+
+            if (paramType == null)
+                throw new ArgumentNullException("paramType");
+
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentNullException("name");
+
+            Index = index;
+            if (method == null)
+                Sequence = -1;
+            else if (!method.HasThis)
+                Sequence = index;
+            else
+                Sequence = index + 1;
+            ParameterType = new EquatableTypeReference(paramType);
+            Name = name;
+            Method = new EquatableMethodReference(method);
+        }
+
+        public static EquatableParameterDefinition NewThisParameter(MethodReference method)
+        {
+            if (method == null)
+                throw new ArgumentNullException("method");
+
+            return new EquatableParameterDefinition(-1, method.DeclaringType, "this", method);
+        }
+
+        public int Index { get; private set; }
+        public int Sequence { get; private set; }
+        public EquatableTypeReference ParameterType { get; private set; }
+        EquatableTypeReference IEquatableVariable.VariableType { get { return ParameterType; } }
+        public string Name { get; private set; }
+        public IEquatableMethodSignature Method { get; private set; }
+        EquatableMethodReference IEquatableVariable.Method { get { return Method as EquatableMethodReference; } }
+        public EquatableParameterDefinition OriginalVariable { get { return this; } }
+        IEquatableVariable IEquatableVariable.OriginalVariable { get { return OriginalVariable; } }
 
         public override int GetHashCode()
         {
-            return ParameterDefinitionMixin.GetDeclarationHashCode(Source);
+            var hashCode = 0;
+            hashCode ^= Index.GetHashCode();
+            hashCode ^= ParameterType != null ? ParameterType.GetHashCode() : 0;
+            hashCode ^= Name != null ? Name.GetHashCode() : 0;
+            hashCode ^= Method != null ? Method.GetHashCode() : 0;
+            return hashCode;
         }
 
         public override bool Equals(object obj)
@@ -57,7 +107,19 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
             if ((other = obj as EquatableParameterDefinition) == null)
                 return false;
 
-            return ParameterDefinitionMixin.AreSameDeclaration(Source, other.Source);
+            if (Sequence != other.Sequence)
+                return false;
+
+            if (ParameterType != other.ParameterType)
+                return false;
+
+            if (Name != other.Name)
+                return false;
+
+            if (!object.Equals(Method, other.Method))
+                return false;
+
+            return true;
         }
 
         public int CompareTo(object obj)
@@ -66,7 +128,25 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
             if ((other = obj as EquatableParameterDefinition) == null)
                 return 1;
 
-            return ParameterDefinitionMixin.CompareByDeclaration(Source, other.Source);
+            var result = 0;
+            if ((result = Sequence.CompareTo(other.Sequence)) != 0)
+                return result;
+
+            if ((result = EquatableMemberReference.DefaultComparer.Compare(ParameterType, other.ParameterType)) != 0)
+                return result;
+
+            if ((result = Comparer<string>.Default.Compare(Name, other.Name)) != 0)
+                return result;
+
+            if ((result = Comparer.Default.Compare(Method, other.Method)) != 0)
+                return result;
+
+            return result;
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

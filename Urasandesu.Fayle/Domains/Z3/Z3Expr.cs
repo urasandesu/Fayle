@@ -36,45 +36,40 @@ using Urasandesu.Fayle.Mixins.Microsoft.Z3;
 
 namespace Urasandesu.Fayle.Domains.Z3
 {
-    public abstract class Z3Expr : Entity<Expr>, IZ3ExprAcceptor
+    public abstract class Z3Expr : Entity<InterpretedConstant>, IZ3ExprAcceptor
     {
-        protected Z3Expr(Expr id)
+        protected Z3Expr(InterpretedConstant id)
         {
+            if (!id.IsValid)
+                throw new ArgumentException("The parameter must be valid.", "id");
+
             base.Id = id;
         }
 
-        public sealed override Expr Id
+        public sealed override InterpretedConstant Id
         {
             get { return base.Id; }
             set { throw new NotSupportedException(); }
         }
 
-        public string Name
-        {
-            get
-            {
-                if (Id == null)
-                    return null;
+        public string ConstantName { get { return Id.ConstantName; } }
+        public string Name { get { return Id.Name; } }
+        public Sort Range { get { return Id.Range; } }
+        public Sort[] Domain { get { return Id.Domain; } }
+        public InterpretedConstant[] Args { get { return Id.Args; } }
 
-                if (Id.FuncDecl == null)
-                    return null;
+        public Expr Expression { get { return Id.Expression; } }
 
-                return Id.FuncDecl.GetStringName();
-            }
-        }
 
-        public void Accept<TZ3ExprVisitor>(ref TZ3ExprVisitor visitor, IZ3ExprFactory factory) where TZ3ExprVisitor : IZ3ExprVisitor
+        public void Accept(IZ3ExprVisitor visitor)
         {
             if (visitor == null)
                 throw new ArgumentNullException("visitor");
 
-            if (factory == null)
-                throw new ArgumentNullException("factory");
-
-            AcceptCore(ref visitor, factory);
+            AcceptCore(visitor);
         }
 
-        protected virtual void AcceptCore<TZ3ExprVisitor>(ref TZ3ExprVisitor visitor, IZ3ExprFactory factory) where TZ3ExprVisitor : IZ3ExprVisitor
+        protected virtual void AcceptCore(IZ3ExprVisitor visitor)
         {
             throw new NotImplementedException(string.Format("This type '{0}' is not implemented.", GetType().Name));
         }

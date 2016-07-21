@@ -31,29 +31,30 @@
 
 using Microsoft.Z3;
 using System;
+using Urasandesu.Fayle.Domains.Z3.Exprs;
+using Urasandesu.Fayle.Mixins.Microsoft.Z3;
 
 namespace Urasandesu.Fayle.Domains.Z3
 {
     public class Z3ExprFactory : IZ3ExprFactory
     {
-        public Z3Expr NewExpr(Expr expr)
+        public Z3Expr NewInstance(InterpretedConstant interpConst)
         {
-            {
-                var intNum = expr as IntNum;
-                if (intNum != null)
-                    return new Z3IntNum(intNum);
-            }
-            {
-                var datatypeExpr = expr as DatatypeExpr;
-                if (datatypeExpr != null)
-                    return new Z3DatatypeExpr(datatypeExpr);
-            }
-            {
-                var seqExpr = expr as SeqExpr;
-                if (seqExpr != null)
-                    return new Z3SeqExpr(seqExpr);
-            }
-            throw new NotSupportedException(string.Format("The type '{0}'({1}) is not supported", expr.GetType().Name, expr));
+            if (!interpConst.IsValid)
+                throw new ArgumentException("The parameter must be valid.", "interpConst");
+
+            if (interpConst.Expression is IntNum)
+                return new Z3IntNum(interpConst);
+            else if (interpConst.Expression is BoolExpr)
+                return new Z3BoolExpr(interpConst);
+            else if (interpConst.Expression is RatNum)
+                return new Z3RatNum(interpConst);
+            else if (interpConst.Expression is DatatypeExpr)
+                return new Z3DatatypeExpr(interpConst);
+            else if (interpConst.Expression is SeqExpr)
+                return new Z3SeqExpr(interpConst);
+
+            throw new NotSupportedException(string.Format("The type '{0}'({1}) is not supported", interpConst.Expression.GetType().Name, interpConst.Expression));
         }
     }
 }

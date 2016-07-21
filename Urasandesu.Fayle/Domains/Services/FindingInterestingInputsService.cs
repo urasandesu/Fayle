@@ -31,63 +31,122 @@
 
 using Microsoft.Z3;
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using Urasandesu.Fayle.Domains.Forms;
-using Urasandesu.Fayle.Domains.Instructions;
+using System.Threading.Tasks;
+using Urasandesu.Fayle.Domains.IR;
+using Urasandesu.Fayle.Domains.SmtLib;
 using Urasandesu.Fayle.Domains.Z3;
+using Urasandesu.Fayle.Infrastructures;
+using Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis;
 using Urasandesu.Fayle.Mixins.Microsoft.Z3;
+using Urasandesu.Fayle.Mixins.Mono.Cecil;
 
 namespace Urasandesu.Fayle.Domains.Services
 {
     public class FindingInterestingInputsService : IFindingInterestingInputsService
     {
+        readonly IResolvingUnknownsService m_rslvngUnksSvc;
         readonly IZ3ExprFactory m_z3ExprFactory;
+        readonly IDatatypesSentenceRepository m_dtSentRepos;
 
-        public FindingInterestingInputsService(IZ3ExprFactory z3ExprFactory)
+        public FindingInterestingInputsService(
+            IResolvingUnknownsService rslvngUnksSvc,
+            IZ3ExprFactory z3ExprFactory,
+            IDatatypesSentenceRepository dtSentRepos)
         {
+            if (rslvngUnksSvc == null)
+                throw new ArgumentNullException("rslvngUnksSvc");
+
             if (z3ExprFactory == null)
                 throw new ArgumentNullException("z3ExprFactory");
 
+            if (dtSentRepos == null)
+                throw new ArgumentNullException("dtSentRepos");
+
+            m_rslvngUnksSvc = rslvngUnksSvc;
             m_z3ExprFactory = z3ExprFactory;
+            m_dtSentRepos = dtSentRepos;
         }
 
-        public InterestingInputs Find(SmtForm smtForm)
+        public InterestingInputCollection Find(SmtForm smtForm)
         {
-            var iis = new InterestingInputs();
-            var paramNames = new HashSet<string>(smtForm.TargetMethod.Parameters.Select(_ => _.Name));
-            foreach (var grpdInsts in smtForm.GetFullPathCoveredInstructions())
+            var iis = new InterestingInputCollection();
+            var scg = m_rslvngUnksSvc.ResolveFullPathCoveredSmtLibStrings(smtForm);
+            Parallel.ForEach(scg, sc =>
             {
+                var dotNetObjTable = new EntityTable<DotNetObjectId, DotNetObject>();
                 using (var ctx = new Context())
                 {
-                    var expr = ctx.ParseSMTLIB2String(GetAllSmtLibString(grpdInsts));
+                    FayleEventSource.Log.Diagnostic("Input {0}: \r\n{1}\r\n\r\n", sc.Id, sc);
+                    var expr = ctx.ParseSMTLIB2String(sc.ToString());
                     var solver = ctx.MkSolver();
                     solver.Assert(expr);
-                    if (solver.Check() != Status.SATISFIABLE)
-                        continue;
+                    var @checked = solver.Check();
+                    FayleEventSource.Log.Diagnostic("Check {0}: \r\n{1}\r\n\r\n", sc.Id, @checked);
+                    if (@checked != Status.SATISFIABLE)
+                        return;
 
-                    foreach (var constDecl in solver.Model.ConstDecls)
+                    FayleEventSource.Log.Diagnostic("Model {0}: \r\n{1}\r\n\r\n", sc.Id, solver.Model);
+                    foreach (var interpConst in InterpretedConstant.New(solver.Model))
                     {
-                        if (!paramNames.Contains(constDecl.GetStringName()))
-                            continue;
-
-                        var interp = solver.Model.ConstInterp(constDecl);
-                        var dotNetObj = new DotNetObject();
-                        m_z3ExprFactory.NewExpr(interp).Accept(ref dotNetObj, m_z3ExprFactory);
-                        iis.Add(new InterestingInput() { Value = dotNetObj.Value });
+                        FayleEventSource.Log.Diagnostic("Interpreted {0} {1}: \r\n{2}\r\n\r\n", sc.Id, interpConst.ConstantName, interpConst.Expression);
+                        var z3ExprVisitor = new Z3ExprVisitor();
+                        var onDotNetObjectGetOrAdd = default(EventHandler<DotNetObjectGetOrAddEventArgs>);
+                        onDotNetObjectGetOrAdd = (sender, e) => e.Result.DotNetObject = dotNetObjTable.GetOrAdd(e.DotNetObject);
+                        try
+                        {
+                            z3ExprVisitor.NextZ3ExprGet += OnNextZ3ExprGet;
+                            z3ExprVisitor.TypeSentenceGet += OnTypeSentenceGet;
+                            z3ExprVisitor.DotNetObjectGetOrAdd += onDotNetObjectGetOrAdd;
+                            m_z3ExprFactory.NewInstance(interpConst).Accept(z3ExprVisitor);
+                        }
+                        finally
+                        {
+                            z3ExprVisitor.NextZ3ExprGet -= OnNextZ3ExprGet;
+                            z3ExprVisitor.TypeSentenceGet -= OnTypeSentenceGet;
+                            z3ExprVisitor.DotNetObjectGetOrAdd -= onDotNetObjectGetOrAdd;
+                        }
                     }
+
+                    foreach (var dotNetObj in scg.AdjustAssignmentOrder(sc, dotNetObjTable.FindAll()))
+                        dotNetObjTable.TryUpdate(dotNetObj);
+
+                    AddInterestingInput(iis, dotNetObjTable, smtForm.Id.Parameters, scg.Id, sc);
                 }
-            }
+            });
             return iis;
         }
 
-        static string GetAllSmtLibString(IGrouping<SmtAssertionGroup, SmtInstruction> grpdInsts)
+        static void AddInterestingInput(InterestingInputCollection iis, EntityTable<DotNetObjectId, DotNetObject> dotNetObjTable, ReadOnlyCollection<EquatableParameterDefinition> @params, InvocationSite @is, SmtLibStringCollection sc)
         {
-            var sb = new StringBuilder();
-            foreach (var inst in grpdInsts)
-                sb.AppendLine(inst.GetSmtLibString());
-            return sb.ToString();
+            foreach (var param in @params)
+                AddInterestingInput(iis, dotNetObjTable, param, @is, sc);
+        }
+
+        static void AddInterestingInput(InterestingInputCollection iis, EntityTable<DotNetObjectId, DotNetObject> dotNetObjTable, EquatableParameterDefinition param, InvocationSite @is, SmtLibStringCollection sc)
+        {
+            var isGeneratedBySpecified = new DotNetObjectIsGeneratedBySpecified(@is, param);
+            var paramDotNetObj = dotNetObjTable.FindAll(isGeneratedBySpecified).LastOrDefault();
+            if (paramDotNetObj == null)
+                return;
+
+            var pointsToAnother = new DotNetObjectPointsToAnother(paramDotNetObj);
+            var dotNetObj = dotNetObjTable.FindAll(pointsToAnother).OrderBy(_ => _.AssignmentOrder).FirstOrDefault();
+            if (dotNetObj != null)
+                iis.Add(new InterestingInput(dotNetObj.Value, sc, param));
+            else
+                iis.Add(new InterestingInput(paramDotNetObj.Value, sc, param));
+        }
+
+        void OnNextZ3ExprGet(object sender, NextZ3ExprGetEventArgs e)
+        {
+            e.Result.Z3Expr = m_z3ExprFactory.NewInstance(e.InterpretedConstant);
+        }
+
+        void OnTypeSentenceGet(object sender, TypeSentenceGetEventArgs e)
+        {
+            e.Result.DatatypesSentence = m_dtSentRepos.FindBy(e.HasTargetMember).FirstOrDefault();
         }
     }
 }

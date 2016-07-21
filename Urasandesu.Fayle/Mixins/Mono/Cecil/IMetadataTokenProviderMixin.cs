@@ -32,7 +32,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
-using Urasandesu.Fayle.Infrastructures;
+using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
 {
@@ -82,8 +82,8 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
             return result;
         }
 
-        static readonly IComparer<IMetadataTokenProvider> m_defaultComparer = NullValueIsMinimumComparer<IMetadataTokenProvider>.Make((_1, _2) => _1.CompareByDeclarationTo(_2));
-        public static IComparer<IMetadataTokenProvider> DefaultComparer { get { return m_defaultComparer; } }
+        static readonly IComparer<IMetadataTokenProvider> ms_defaultComparer = NullValueIsMinimumComparer<IMetadataTokenProvider>.Make((_1, _2) => _1.CompareByDeclarationTo(_2));
+        public static IComparer<IMetadataTokenProvider> DefaultComparer { get { return ms_defaultComparer; } }
 
         public static int CompareByDeclaration(IMetadataTokenProvider lhs, IMetadataTokenProvider rhs)
         {

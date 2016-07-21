@@ -39,6 +39,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InstanceInspection.cs" />
+    <Compile Include="Inheritance.cs" />
+    <Compile Include="ReferentialTransparent.cs" />
+    <Compile Include="StateRelationForStruct.cs" />
+    <Compile Include="StateRelationForClass.cs" />
     <Compile Include="HiddenBug.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

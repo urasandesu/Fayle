@@ -29,13 +29,13 @@
 
 
 
-using Urasandesu.Fayle.Domains.Forms;
+using Urasandesu.Fayle.Domains.IR;
 
 namespace Urasandesu.Fayle.Domains.Services
 {
     public interface IFindingInterestingInputsService
     {
-        InterestingInputs Find(SmtForm smtForm);
+        InterestingInputCollection Find(SmtForm smtForm);
     }
 }
 

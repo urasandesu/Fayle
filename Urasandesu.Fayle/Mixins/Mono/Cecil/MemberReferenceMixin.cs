@@ -32,7 +32,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
-using Urasandesu.Fayle.Infrastructures;
+using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
 {
@@ -80,21 +80,24 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
                 return 1;
 
             var result = 0;
-            if ((result = @this.Module.Assembly.FullName.CompareTo(other.Module.Assembly.FullName)) != 0)
+            if ((result = string.Compare(@this.Module.Assembly.FullName, other.Module.Assembly.FullName)) != 0)
                 return result;
 
-            if ((result = @this.FullName.CompareTo(other.FullName)) != 0)
+            if ((result = string.Compare(@this.FullName, other.FullName, StringComparison.Ordinal)) != 0)
                 return result;
 
             return result;
         }
 
-        static readonly IComparer<MemberReference> m_defaultComparer = NullValueIsMinimumComparer<MemberReference>.Make((_1, _2) => _1.CompareByDeclarationTo(_2));
-        public static IComparer<MemberReference> DefaultComparer { get { return m_defaultComparer; } }
+        static readonly IComparer<MemberReference> ms_defaultComparer = NullValueIsMinimumComparer<MemberReference>.Make((_1, _2) => _1.CompareByDeclarationTo(_2));
+        public static IComparer<MemberReference> DefaultComparer { get { return ms_defaultComparer; } }
 
         public static int CompareByDeclaration(MemberReference lhs, MemberReference rhs)
         {
             return DefaultComparer.Compare(lhs, rhs);
         }
+
+        static readonly IEqualityComparer<MemberReference> ms_defaultEqualityComparer = ObjectEqualityComparer<MemberReference>.Make((_1, _2) => _1.IsSameDeclaration(_2), _ => _.GetDeclarationHashCode());
+        public static IEqualityComparer<MemberReference> DefaultEqualityComparer { get { return ms_defaultEqualityComparer; } }
     }
 }

@@ -35,7 +35,7 @@ namespace Urasandesu.Fayle.Infrastructures
 {
     public interface INumericKeyedRepository<TEntity, TId> : IRepository<TEntity, TId, Identity<int>>
         where TEntity : IEquatableIdEntity<TId, Identity<int>>
-        where TId : IEquatable<TId>, IComparable<TId>, ISimpleValidator
+        where TId : IEquatable<TId>, IComparable<TId>, IIdentityValidator
     {
     }
 }

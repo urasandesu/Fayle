@@ -30,9 +30,10 @@
 
 
 using ICSharpCode.Decompiler.FlowAnalysis;
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
-using Urasandesu.Fayle.Infrastructures;
+using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 {
@@ -73,18 +74,23 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
                 return 1;
 
             var result = 0;
-            if ((result = @this.Name.CompareTo(other.Name)) != 0)
+            if ((result = string.Compare(@this.Name, other.Name, StringComparison.Ordinal)) != 0)
                 return result;
 
             return result;
         }
 
-        static readonly IComparer<SsaVariable> m_defaultComparer = NullValueIsMinimumComparer<SsaVariable>.Make((_1, _2) => _1.CompareByDeclarationTo(_2));
-        public static IComparer<SsaVariable> DefaultComparer { get { return m_defaultComparer; } }
+        static readonly IComparer<SsaVariable> ms_defaultComparer = NullValueIsMinimumComparer<SsaVariable>.Make((_1, _2) => _1.CompareByDeclarationTo(_2));
+        public static IComparer<SsaVariable> DefaultComparer { get { return ms_defaultComparer; } }
 
         public static int CompareByDeclaration(SsaVariable lhs, SsaVariable rhs)
         {
             return DefaultComparer.Compare(lhs, rhs);
+        }
+
+        public static TypeReference GetVariableType(this SsaVariable @this)
+        {
+            throw new NotImplementedException();
         }
     }
 }

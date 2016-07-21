@@ -34,7 +34,7 @@ using System;
 namespace Urasandesu.Fayle.Infrastructures
 {
     public abstract class NumericKeyedEntity<TKey> : EquatableIdEntity<TKey, Identity<int>>, INumericKeyedEntity<TKey>
-        where TKey : IEquatable<TKey>, IComparable<TKey>, ISimpleValidator
+        where TKey : IEquatable<TKey>, IComparable<TKey>, IIdentityValidator
     {
     }
 }

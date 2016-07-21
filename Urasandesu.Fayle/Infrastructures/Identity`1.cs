@@ -31,10 +31,11 @@
 
 using System;
 using System.Collections.Generic;
+using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Infrastructures
 {
-    public struct Identity<T> : IValueObject<Identity<T>>, IComparable<Identity<T>>, ISimpleValidator where T : IEquatable<T>, IComparable<T>
+    public struct Identity<T> : IValueObject, IComparable<Identity<T>>, IEquatable<Identity<T>>, IIdentityValidator where T : IEquatable<T>, IComparable<T>
     {
         public Identity(T value)
             : this()
@@ -99,8 +100,8 @@ namespace Urasandesu.Fayle.Infrastructures
             return DefaultComparer.Compare(this, other);
         }
 
-        static readonly IComparer<Identity<T>> m_defaultComparer = NullValueIsMinimumComparer<Identity<T>>.Make(_ => _.Value);
-        public static IComparer<Identity<T>> DefaultComparer { get { return m_defaultComparer; } }
+        static readonly IComparer<Identity<T>> ms_defaultComparer = NullValueIsMinimumComparer<Identity<T>>.Make(_ => _.Value);
+        public static IComparer<Identity<T>> DefaultComparer { get { return ms_defaultComparer; } }
     }
 }
 

@@ -29,12 +29,12 @@
 
 
 
-using Microsoft.Z3;
+using Urasandesu.Fayle.Mixins.Microsoft.Z3;
 
 namespace Urasandesu.Fayle.Domains.Z3
 {
     public interface IZ3ExprFactory
     {
-        Z3Expr NewExpr(Expr expr);
+        Z3Expr NewInstance(InterpretedConstant interpConst);
     }
 }

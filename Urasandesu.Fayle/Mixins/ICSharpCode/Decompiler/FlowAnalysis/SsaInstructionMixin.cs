@@ -32,8 +32,8 @@
 using ICSharpCode.Decompiler.FlowAnalysis;
 using System;
 using System.Collections.Generic;
-using Urasandesu.Fayle.Infrastructures;
 using Urasandesu.Fayle.Mixins.Mono.Cecil.Cil;
+using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 {
@@ -47,7 +47,7 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             if (other == null)
                 return false;
 
-            return @this.Instruction != null && @this.Instruction.IsSameOffset(other.Instruction);
+            return @this.Instruction != null && @this.Instruction.IsSameDeclaration(other.Instruction);
         }
 
         public static bool AreSameDeclaration(SsaInstruction lhs, SsaInstruction rhs)
@@ -88,12 +88,66 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             return result;
         }
         
-        static readonly IComparer<SsaInstruction> m_defaultComparer = NullValueIsMinimumComparer<SsaInstruction>.Make((_1, _2) => _1.CompareByDeclarationTo(_2));
-        public static IComparer<SsaInstruction> DefaultComparer { get { return m_defaultComparer; } }
+        static readonly IComparer<SsaInstruction> ms_defaultComparer = NullValueIsMinimumComparer<SsaInstruction>.Make((_1, _2) => _1.CompareByDeclarationTo(_2));
+        public static IComparer<SsaInstruction> DefaultComparer { get { return ms_defaultComparer; } }
 
         public static int CompareByDeclaration(SsaInstruction lhs, SsaInstruction rhs)
         {
             return DefaultComparer.Compare(lhs, rhs);
+        }
+
+        public static bool IsConstantInstruction(this SsaInstruction @this)
+        {
+            if (@this == null)
+                throw new ArgumentNullException("this");
+
+            return @this.Instruction.IsConstantInstruction();
+        }
+
+        public static bool IsBranchInstruction(this SsaInstruction @this)
+        {
+            if (@this == null)
+                throw new ArgumentNullException("this");
+
+            return @this.Instruction.IsBranchInstruction();
+        }
+
+        public static bool IsLoadParameterInstruction(this SsaInstruction @this)
+        {
+            if (@this == null)
+                throw new ArgumentNullException("this");
+
+            return @this.Instruction.IsLoadParameterInstruction();
+        }
+
+        public static bool IsVariableInstruction(this SsaInstruction @this)
+        {
+            return @this.IsLoadVariableInstruction() || 
+                   @this.IsStoreVariableInstruction();
+        }
+
+        public static bool IsLoadVariableInstruction(this SsaInstruction @this)
+        {
+            if (@this == null)
+                throw new ArgumentNullException("this");
+
+            return @this.Instruction.IsLoadVariableInstruction();
+        }
+
+        public static bool IsStoreVariableInstruction(this SsaInstruction @this)
+        {
+            if (@this == null)
+                throw new ArgumentNullException("this");
+
+            return @this.Instruction.IsStoreVariableInstruction();
+        }
+
+        public static object GetConstant(this SsaInstruction @this)
+        {
+            if (@this == null)
+                throw new ArgumentNullException("this");
+
+            return @this.Instruction.GetConstant();
         }
     }
 }

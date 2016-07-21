@@ -33,6 +33,6 @@ namespace Urasandesu.Fayle.Domains.Z3
 {
     public interface IZ3ExprAcceptor
     {
-        void Accept<TZ3ExprVisitor>(ref TZ3ExprVisitor visitor, IZ3ExprFactory factory) where TZ3ExprVisitor : IZ3ExprVisitor;
+        void Accept(IZ3ExprVisitor visitor);
     }
 }

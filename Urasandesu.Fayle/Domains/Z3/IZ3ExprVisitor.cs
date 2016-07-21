@@ -29,29 +29,43 @@
 
 
 
+using Microsoft.Z3;
+using System;
+using Urasandesu.Fayle.Domains.SmtLib;
+using Urasandesu.Fayle.Domains.Z3.Exprs;
+using Urasandesu.Fayle.Mixins.Microsoft.Z3;
+
 namespace Urasandesu.Fayle.Domains.Z3
 {
     public interface IZ3ExprVisitor
     {
-        void Visit(Z3ArithExpr expr);
-        void Visit(Z3AlgebraicNum expr);
-        void Visit(Z3IntExpr expr);
-        void Visit(Z3IntNum expr);
-        void Visit(Z3RealExpr expr);
-        void Visit(Z3RatNum expr);
-        void Visit(Z3ArrayExpr expr);
-        void Visit(Z3BitVecExpr expr);
-        void Visit(Z3BitVecNum expr);
-        void Visit(Z3BoolExpr expr);
-        void Visit(Z3Quantifier expr);
-        void Visit(Z3DatatypeExpr expr);
-        void Visit(Z3FiniteDomainExpr expr);
-        void Visit(Z3FiniteDomainNum expr);
-        void Visit(Z3FPExpr expr);
-        void Visit(Z3FPNum expr);
-        void Visit(Z3FPRMExpr expr);
-        void Visit(Z3FPRMNum expr);
-        void Visit(Z3ReExpr expr);
-        void Visit(Z3SeqExpr expr);
+        void Visit(Z3ArithExpr z3Expr);
+        void Visit(Z3AlgebraicNum z3Expr);
+        void Visit(Z3IntExpr z3Expr);
+        void Visit(Z3IntNum z3Expr);
+        void Visit(Z3RealExpr z3Expr);
+        void Visit(Z3RatNum z3Expr);
+        void Visit(Z3ArrayExpr z3Expr);
+        void Visit(Z3BitVecExpr z3Expr);
+        void Visit(Z3BitVecNum z3Expr);
+        void Visit(Z3BoolExpr z3Expr);
+        void Visit(Z3Quantifier z3Expr);
+        void Visit(Z3DatatypeExpr z3Expr);
+        void Visit(Z3FiniteDomainExpr z3Expr);
+        void Visit(Z3FiniteDomainNum z3Expr);
+        void Visit(Z3FPExpr z3Expr);
+        void Visit(Z3FPNum z3Expr);
+        void Visit(Z3FPRMExpr z3Expr);
+        void Visit(Z3FPRMNum z3Expr);
+        void Visit(Z3ReExpr z3Expr);
+        void Visit(Z3SeqExpr z3Expr);
+        event EventHandler<NextZ3ExprGetEventArgs> NextZ3ExprGet;
+        Z3Expr GetNextZ3Expr(InterpretedConstant interpConst);
+        bool TryGetNextZ3Expr(InterpretedConstant interpConst, out Z3Expr result);
+        event EventHandler<TypeSentenceGetEventArgs> TypeSentenceGet;
+        DatatypesSentence GetTypeSentence(string name, Sort range, Sort[] domain);
+        bool TryGetTypeSentence(string name, Sort range, Sort[] domain, out DatatypesSentence result);
+        event EventHandler<DotNetObjectGetOrAddEventArgs> DotNetObjectGetOrAdd;
+        DotNetObject GetOrAddDotNetObject(DotNetObject dotNetObj);
     }
 }

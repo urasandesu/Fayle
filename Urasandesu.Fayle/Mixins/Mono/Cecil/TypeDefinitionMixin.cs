@@ -40,11 +40,45 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
         {
             var mscorlibDll = AssemblyDefinitionMixin.MSCorLib.MainModule;
             var mscorlibTypes = mscorlibDll.Types.ToDictionary(_ => _.FullName);
-            Int32 = mscorlibTypes["System.Int32"];
             Boolean = mscorlibTypes["System.Boolean"];
+            Int32 = mscorlibTypes["System.Int32"];
+            Double = mscorlibTypes["System.Double"];
+            String = mscorlibTypes["System.String"];
+            Object = mscorlibTypes["System.Object"];
+            Void = mscorlibTypes["System.Void"];
+            Array = mscorlibTypes["System.Array"];
+
+            var fayleDll = AssemblyDefinitionMixin.Fayle.MainModule;
+            var fayleTypes = fayleDll.Types.ToDictionary(_ => _.FullName);
+            EmptySentence = fayleTypes["Urasandesu.Fayle.Domains.SmtLib.Sentences.EmptySentence"];
+            TypeSentence = fayleTypes["Urasandesu.Fayle.Domains.SmtLib.Sentences.TypeSentence"];
+            BoolSentence = fayleTypes["Urasandesu.Fayle.Domains.SmtLib.Sentences.BoolSentence"];
+            IntSentence = fayleTypes["Urasandesu.Fayle.Domains.SmtLib.Sentences.IntSentence"];
+            RealSentence = fayleTypes["Urasandesu.Fayle.Domains.SmtLib.Sentences.RealSentence"];
+            SeqSentence = fayleTypes["Urasandesu.Fayle.Domains.SmtLib.Sentences.SeqSentence"];
+            StringSentence = fayleTypes["Urasandesu.Fayle.Domains.SmtLib.Sentences.StringSentence"];
+            InternalSZArraySentence = fayleTypes["Urasandesu.Fayle.Domains.SmtLib.Sentences.InternalSZArraySentence"];
+            SpecializedInternalSZArray = fayleTypes["Urasandesu.Fayle.Domains.SmtLib.Sentences.SpecializedInternalSZArray"];
+            SpecializedInternalSZArrayOfT = fayleTypes["Urasandesu.Fayle.Domains.SmtLib.Sentences.SpecializedInternalSZArray`1"];
         }
 
-        public static readonly TypeDefinition Int32;
         public static readonly TypeDefinition Boolean;
+        public static readonly TypeDefinition Int32;
+        public static readonly TypeDefinition Double;
+        public static readonly TypeDefinition String;
+        public static readonly TypeDefinition Object;
+        public static readonly TypeDefinition Void;
+        public static readonly TypeDefinition Array;
+        
+        public static readonly TypeDefinition EmptySentence;
+        public static readonly TypeDefinition TypeSentence;
+        public static readonly TypeDefinition BoolSentence;
+        public static readonly TypeDefinition IntSentence;
+        public static readonly TypeDefinition RealSentence;
+        public static readonly TypeDefinition SeqSentence;
+        public static readonly TypeDefinition StringSentence;
+        public static readonly TypeDefinition InternalSZArraySentence;
+        public static readonly TypeDefinition SpecializedInternalSZArray;
+        public static readonly TypeDefinition SpecializedInternalSZArrayOfT;
     }
 }

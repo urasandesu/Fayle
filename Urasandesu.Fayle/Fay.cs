@@ -29,56 +29,24 @@
 
 
 
-using Microsoft.Practices.Unity;
 using Mono.Cecil;
 using System;
-using System.ComponentModel;
-using System.Text;
-using Urasandesu.Fayle.Domains.Blocks;
-using Urasandesu.Fayle.Domains.Forms;
-using Urasandesu.Fayle.Domains.Instructions;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using Urasandesu.Fayle.Domains.IR;
 using Urasandesu.Fayle.Domains.Services;
-using Urasandesu.Fayle.Domains.Z3;
-using Urasandesu.Fayle.Repositories;
+using Urasandesu.Fayle.Infrastructures;
+using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle
 {
-    public class Fay
+    public class Fay : IMethodResolveWayEventHandler, ITypeResolveWayEventHandler
     {
         readonly ITranspilingToSmtService m_transpilingToSmtSvc;
         readonly IFindingInterestingInputsService m_findingIiSvc;
+        readonly IResolvingUnknownsService m_rslvngUnksSvc;
 
-        public Fay()
-            : this(Container.Resolve<ITranspilingToSmtService>(), Container.Resolve<IFindingInterestingInputsService>())
-        { }
-
-        static IUnityContainer m_container;
-        protected static IUnityContainer Container
-        {
-            get
-            {
-                if (m_container == null)
-                {
-                    m_container = new UnityContainer();
-                    m_container.
-                        RegisterType<ITranspilingToSmtService, TranspilingToSmtService>().
-                        RegisterType<IFindingInterestingInputsService, FindingInterestingInputsService>().
-                        RegisterType<ISmtFormFactory, SmtFormFactory>().
-                        RegisterType<ISmtFormRepository, SmtFormRepository>().
-                        RegisterType<ISmtBlockFactory, SmtBlockFactory>().
-                        RegisterType<ISmtBlockRepository, SmtBlockRepository>().
-                        RegisterType<ISmtInstructionFactory, SmtInstructionFactory>().
-                        RegisterType<ISmtDeclarativeInstructionFactory, SmtDeclarativeInstructionFactory>().
-                        RegisterType<ISmtNormalAssertionFactory, SmtNormalAssertionFactory>().
-                        RegisterType<ISmtInstructionRepository, SmtInstructionRepository>().
-                        RegisterType<IZ3ExprFactory, Z3ExprFactory>();
-                }
-                return m_container;
-            }
-            set { m_container = value; }
-        }
-
-        public Fay(ITranspilingToSmtService transpilingToSmtSvc, IFindingInterestingInputsService findingIiSvc)
+        public Fay(ITranspilingToSmtService transpilingToSmtSvc, IFindingInterestingInputsService findingIiSvc, IResolvingUnknownsService rslvngUnksSvc)
         {
             if (transpilingToSmtSvc == null)
                 throw new ArgumentNullException("transpilingToSmtSvc");
@@ -86,51 +54,80 @@ namespace Urasandesu.Fayle
             if (findingIiSvc == null)
                 throw new ArgumentNullException("findingIiSvc");
 
+            if (rslvngUnksSvc == null)
+                throw new ArgumentNullException("rslvngUnksSvc");
+
             m_transpilingToSmtSvc = transpilingToSmtSvc;
             m_findingIiSvc = findingIiSvc;
+            m_rslvngUnksSvc = rslvngUnksSvc;
         }
 
-        public virtual InterestingInputs GetInterestingInputs(MethodDefinition methDef)
+        public virtual InterestingInputCollection GetInterestingInputs(MethodDefinition methDef)
         {
-            var smtForm = m_transpilingToSmtSvc.Transpile(methDef);
-            if (smtForm.UnknownMethods.Length != 0)
+            var stopwatch = Stopwatch.StartNew();
+            var result = default(InterestingInputCollection);
+            try
             {
-                var unkMethRslv = UnknownMethodResolve;
-                if (unkMethRslv == null)
-                    throw new UnknownMethodNotResolveException(ToExceptionMessage(smtForm.UnknownMethods));
+                FayleEventSource.Log.Performance("#38BDD5A8 GetInterestingInputs(MethodDefinition: \"{0}\")", methDef);
 
-                while (smtForm.UnknownMethods.Length != 0)
+                var smtForm = m_transpilingToSmtSvc.Transpile(methDef);
+
+                using (var typeRslvWay = m_rslvngUnksSvc.PrepareToResolveUnknownTypes(this))
                 {
-                    var e = new UnknownMethodResolveEventArgs();
-                    e.UnknownMethod = smtForm.UnknownMethods[0];
-                    e.AvailableResolvers = GetUnknownMethodResolvers();
-                    unkMethRslv(this, e);
-                    if (e.Result.IsCancelled)
-                        throw new UnknownMethodNotResolveException(ToExceptionMessage(smtForm.UnknownMethods));
-
-                    var param = new UnknownMethodResolveParameter();
-                    param.SmtForm = smtForm;
-                    e.Result.Resolver.Resolve(param);
+                    m_rslvngUnksSvc.ResolveUnknownTypes(smtForm, typeRslvWay);
+                    using (var methRslvWay = m_rslvngUnksSvc.PrepareToResolveUnknownMethods(typeRslvWay.NotOwned(), this))
+                        m_rslvngUnksSvc.ResolveUnknownMethods(smtForm, methRslvWay);
                 }
+
+                result = m_findingIiSvc.Find(smtForm);
+                return result;
             }
-
-            return m_findingIiSvc.Find(smtForm);
+            finally
+            {
+                FayleEventSource.Log.Performance("#38BDD5A8 InterestingInputs: 0x{0:X8}({1}) {2} wall", RuntimeHelpers.GetHashCode(result), result, stopwatch.Elapsed);
+            }
         }
 
-        static string ToExceptionMessage(MethodReference[] unkMeths)
+        public virtual event EventHandler<MethodResolveWayConfirmEventArgs> MethodResolveWayConfirm;
+
+        void ThroughMethodResolveWayConfirm(object sender, MethodResolveWayConfirmEventArgs e)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("The following methods cannot be resolved: ");
-            foreach (var unkMeth in unkMeths)
-                sb.AppendLine(unkMeth.ToString());
-            return sb.ToString();
+            var handler = MethodResolveWayConfirm;
+            if (handler == null)
+                return;
+
+            handler(sender, e);
         }
 
-        IUnknownMethodResolver[] GetUnknownMethodResolvers()
+        public virtual event EventHandler<TypeResolveWayConfirmEventArgs> TypeResolveWayConfirm;
+
+        void ThroughTypeResolveWayConfirm(object sender, TypeResolveWayConfirmEventArgs e)
         {
-            throw new NotImplementedException();
+            var handler = TypeResolveWayConfirm;
+            if (handler == null)
+                return;
+
+            handler(sender, e);
         }
 
-        public virtual event EventHandler<UnknownMethodResolveEventArgs> UnknownMethodResolve;
+        void IMethodResolveWayEventHandler.Subscribe(MethodResolveWay methRslvWay)
+        {
+            methRslvWay.MethodResolveWayConfirm += ThroughMethodResolveWayConfirm;
+        }
+
+        void IMethodResolveWayEventHandler.Unsubscribe(MethodResolveWay methRslvWay)
+        {
+            methRslvWay.MethodResolveWayConfirm -= ThroughMethodResolveWayConfirm;
+        }
+
+        void ITypeResolveWayEventHandler.Subscribe(TypeResolveWay typeRslvWay)
+        {
+            typeRslvWay.TypeResolveWayConfirm += ThroughTypeResolveWayConfirm;
+        }
+
+        void ITypeResolveWayEventHandler.Unsubscribe(TypeResolveWay typeRslvWay)
+        {
+            typeRslvWay.TypeResolveWayConfirm -= ThroughTypeResolveWayConfirm;
+        }
     }
 }

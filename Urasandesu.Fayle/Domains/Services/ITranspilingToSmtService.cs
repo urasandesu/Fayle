@@ -30,12 +30,18 @@
 
 
 using Mono.Cecil;
-using Urasandesu.Fayle.Domains.Forms;
+using Urasandesu.Fayle.Domains.IR;
+using Urasandesu.Fayle.Mixins.Mono.Cecil;
 
 namespace Urasandesu.Fayle.Domains.Services
 {
     public interface ITranspilingToSmtService
     {
-        SmtForm Transpile(MethodDefinition methDef);
+        SmtForm Transpile(MethodDefinition method);
+        SmtForm Transpile(GenericInstanceMethod method);
+        SmtForm Transpile(EquatablePreservedMethod method);
+        SmtForm TranspileToEmptyForm(MethodDefinition method);
+        SmtForm TranspileToEmptyForm(GenericInstanceMethod method);
+        SmtForm TranspileToEmptyForm(EquatablePreservedMethod method);
     }
 }

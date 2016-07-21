@@ -36,17 +36,18 @@ namespace Urasandesu.Fayle.Infrastructures
 {
     public interface IRepository<TEntity, TId, TSurrogateKey> 
         where TEntity : IEquatableIdEntity<TId, TSurrogateKey>
-        where TId : IEquatable<TId>, IComparable<TId>, ISimpleValidator
-        where TSurrogateKey : IEquatable<TSurrogateKey>, IComparable<TSurrogateKey>, ISimpleValidator
+        where TId : IEquatable<TId>, IComparable<TId>, IIdentityValidator
+        where TSurrogateKey : IEquatable<TSurrogateKey>, IComparable<TSurrogateKey>, IIdentityValidator
     {
+        IEnumerable<TEntity> FindAll();
         IEnumerable<TEntity> FindBy<TSpec>(TSpec spec) where TSpec : ISpecification;
         TEntity FindOneBy(TId id);
         TEntity FindOneBy(TSurrogateKey sKey);
-        TEntity GetOrAdd(TEntity entity);
-        void AddOrUpdate(TEntity entity);
-        bool TryAdd(TEntity entity);
-        bool TryUpdate(TEntity entity);
-        TSurrogateKey GetNextKey();
+        TEntity FindOrStore(TEntity entity);
+        void Store(TEntity entity);
+        bool TryStore(TEntity entity);
+        bool TryDelete(TEntity entity);
+        void DeleteAll();
     }
 }
 

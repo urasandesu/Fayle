@@ -34,8 +34,8 @@ using System;
 namespace Urasandesu.Fayle.Infrastructures
 {
     public interface IEquatableIdEntity<TId, TSurrogateKey> : IEntity<TId>, IComparable<IEquatableIdEntity<TId, TSurrogateKey>>
-        where TId : IEquatable<TId>, IComparable<TId>, ISimpleValidator
-        where TSurrogateKey : IEquatable<TSurrogateKey>, IComparable<TSurrogateKey>, ISimpleValidator
+        where TId : IEquatable<TId>, IComparable<TId>, IIdentityValidator
+        where TSurrogateKey : IEquatable<TSurrogateKey>, IComparable<TSurrogateKey>, IIdentityValidator
     {
         TSurrogateKey SurrogateKey { get; set; }
     }

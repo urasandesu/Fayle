@@ -34,7 +34,7 @@ using System;
 namespace Urasandesu.Fayle.Infrastructures
 {
     public interface INumericKeyedEntity<TKey> : IEquatableIdEntity<TKey, Identity<int>>
-        where TKey : IEquatable<TKey>, IComparable<TKey>, ISimpleValidator
+        where TKey : IEquatable<TKey>, IComparable<TKey>, IIdentityValidator
     {
     }
 }

@@ -30,70 +30,34 @@
 
 
 using System;
-using System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Infrastructures
 {
-    public struct AndSpecification<TLeftSpec, TRightSpec> : ISpecification, IValueObject<AndSpecification<TLeftSpec, TRightSpec>>
-        where TLeftSpec : ISpecification, IValueObject<TLeftSpec>
-        where TRightSpec : ISpecification, IValueObject<TRightSpec>
+    public struct AndSpecification<TLeftSpec, TRightSpec> : ISpecification
+        where TLeftSpec : ISpecification
+        where TRightSpec : ISpecification
     {
         readonly TLeftSpec m_lhs;
         readonly TRightSpec m_rhs;
 
         public AndSpecification(TLeftSpec lhs, TRightSpec rhs)
         {
+            if (lhs == null)
+                throw new ArgumentNullException("lhs");
+
+            if (rhs == null)
+                throw new ArgumentNullException("rhs");
+
             m_lhs = lhs;
             m_rhs = rhs;
         }
 
         public bool IsSatisfiedBy(object obj)
         {
+            if (m_lhs == null || m_rhs == null)
+                return false;
+
             return m_lhs.IsSatisfiedBy(obj) && m_rhs.IsSatisfiedBy(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = 0;
-            hashCode ^= m_lhs != null ? m_lhs.GetHashCode() : 0;
-            hashCode ^= m_rhs != null ? m_rhs.GetHashCode() : 0;
-            return hashCode;
-        }
-
-        public override bool Equals(object obj)
-        {
-            var other = default(AndSpecification<TLeftSpec, TRightSpec>?);
-            if ((other = obj as AndSpecification<TLeftSpec, TRightSpec>?) == null)
-                return false;
-
-            return ((IEquatable<AndSpecification<TLeftSpec, TRightSpec>>)this).Equals(other.Value);
-        }
-
-        static readonly IEqualityComparer<AndSpecification<TLeftSpec, TRightSpec>> m_leftSpecDefaultComparer = EquatableComparer<AndSpecification<TLeftSpec, TRightSpec>>.Make(_ => _.m_lhs);
-        public static IEqualityComparer<AndSpecification<TLeftSpec, TRightSpec>> LeftSpecDefaultComparer { get { return m_leftSpecDefaultComparer; } }
-
-        static readonly IEqualityComparer<AndSpecification<TLeftSpec, TRightSpec>> m_rightSpecDefaultComparer = EquatableComparer<AndSpecification<TLeftSpec, TRightSpec>>.Make(_ => _.m_rhs);
-        public static IEqualityComparer<AndSpecification<TLeftSpec, TRightSpec>> RightSpecDefaultComparer { get { return m_rightSpecDefaultComparer; } }
-
-        public bool Equals(AndSpecification<TLeftSpec, TRightSpec> other)
-        {
-            if (!LeftSpecDefaultComparer.Equals(this, other))
-                return false;
-
-            if (!RightSpecDefaultComparer.Equals(this, other))
-                return false;
-
-            return true;
-        }
-
-        public static bool operator ==(AndSpecification<TLeftSpec, TRightSpec> lhs, AndSpecification<TLeftSpec, TRightSpec> rhs)
-        {
-            return lhs.Equals(rhs);
-        }
-
-        public static bool operator !=(AndSpecification<TLeftSpec, TRightSpec> lhs, AndSpecification<TLeftSpec, TRightSpec> rhs)
-        {
-            return !(lhs == rhs);
         }
     }
 }

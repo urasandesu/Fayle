@@ -34,9 +34,8 @@ using System;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
 {
-    public class EquatableVariableDefinition : IComparable
+    public class EquatableVariableDefinition : IComparable, IEquatableVariable
     {
-        readonly VariableDefinition Source;
         public EquatableVariableDefinition(VariableDefinition source)
         {
             if (source == null)
@@ -45,19 +44,57 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
             Source = source;
         }
 
+        public VariableDefinition Source { get; private set; }
+
         public override int GetHashCode()
         {
-            throw new NotImplementedException();
+            return VariableDefinitionMixin.GetDeclarationHashCode(Source);
         }
 
         public override bool Equals(object obj)
         {
-            throw new NotImplementedException();
+            var other = default(EquatableVariableDefinition);
+            if ((other = obj as EquatableVariableDefinition) == null)
+                return false;
+
+            return VariableDefinitionMixin.AreSameDeclaration(Source, other.Source);
         }
 
         public int CompareTo(object obj)
         {
-            throw new NotImplementedException();
+            var other = default(EquatableVariableDefinition);
+            if ((other = obj as EquatableVariableDefinition) == null)
+                return 1;
+
+            return VariableDefinitionMixin.CompareByDeclaration(Source, other.Source);
+        }
+
+        public int Index { get { return Source.Index; } }
+
+        EquatableTypeReference m_varType;
+        public EquatableTypeReference VariableType
+        {
+            get
+            {
+                if (m_varType == null)
+                    m_varType = new EquatableTypeReference(Source.VariableType);
+                return m_varType;
+            }
+        }
+
+        public string Name { get { return Source.ToString(); } }
+
+        EquatableMethodReference IEquatableVariable.Method
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public EquatableVariableDefinition OriginalVariable { get { return this; } }
+        IEquatableVariable IEquatableVariable.OriginalVariable { get { return OriginalVariable; } }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

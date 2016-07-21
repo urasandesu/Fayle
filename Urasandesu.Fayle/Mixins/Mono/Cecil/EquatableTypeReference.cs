@@ -30,43 +30,126 @@
 
 
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
 using System;
+using System.Collections.Generic;
+using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
 {
-    public class EquatableTypeReference : IComparable
+    public class EquatableTypeReference : EquatableMemberReference
     {
+        public EquatableTypeReference()
+        { }
+
         public EquatableTypeReference(TypeReference source)
-        {
-            if (source == null)
-                throw new ArgumentNullException("source");
+            : base(source)
+        { }
 
-            Source = source;
+        public new TypeReference Source { get { return (TypeReference)base.Source; } }
+
+        public virtual EquatableTypeDefinition Resolve()
+        {
+            var eqTypeDef = default(EquatableTypeDefinition);
+            if (this.TryCastTo(out eqTypeDef))
+                return eqTypeDef;
+            else
+                return new EquatableTypeDefinition(Source.Resolve());
         }
 
-        public TypeReference Source { get; private set; }
-
-        public override int GetHashCode()
+        public virtual EquatablePreservedType ResolvePreserve()
         {
-            return MemberReferenceMixin.GetDeclarationHashCode(Source);
+            return new EquatablePreservedType(Source.ResolvePreserve());
         }
 
-        public override bool Equals(object obj)
+        public bool HasElementType { get { return Source.HasElementType(); } }
+
+        public EquatableTypeReference GetElementType()
         {
-            var other = default(EquatableTypeReference);
-            if ((other = obj as EquatableTypeReference) == null)
+            if (!HasElementType)
+                return null;
+
+            if (IsArray)
+                return new EquatableTypeReference(((ArrayType)Source).ElementType);
+
+            throw new NotImplementedException();
+        }
+
+        public bool IsGenericParameter { get { return Source.IsGenericParameter; } }
+
+        public bool IsGenericInstance { get { return Source.IsGenericInstance; } }
+
+        public bool IsGenericTypeDefinition { get { return Source.HasGenericParameters && !Source.IsGenericInstance; } }
+
+        public bool IsGenericType { get { return Source.HasGenericParameters; } }
+
+        public bool IsNested { get { return Source.IsNested; } }
+
+        public bool IsByRef { get { return Source.IsByReference; } }
+
+        public bool IsArray { get { return Source.IsArray; } }
+
+        public int GetArrayRank()
+        {
+            if (!IsArray)
+                throw new ArgumentException("The current type is not an array.");
+
+            return ((ArrayType)Source).Rank;
+        }
+
+        public bool IsPointer { get { return Source.IsPointer; } }
+
+        public bool IsValueType { get { return Source.IsValueType; } }
+
+        public EquatableTypeReference[] GetGenericArguments()
+        {
+            throw new NotImplementedException();
+        }
+
+        public EquatableGenericInstanceType MakeGenericInstanceType(params EquatableTypeReference[] arguments)
+        {
+            if (arguments == null)
+                throw new ArgumentNullException("arguments");
+
+            var arguments_ = new List<TypeReference>();
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                if (arguments[i] == null)
+                    throw new ArgumentNullException(string.Format("arguments[{0}]", i));
+
+                arguments_.Add(arguments[i].Source);
+            }
+
+            return new EquatableGenericInstanceType(Source.MakeGenericInstanceType(arguments_.ToArray()));
+        }
+
+        public Type ToDotNetType()
+        {
+            return Source.ToDotNetType();
+        }
+
+        public override sealed bool TrySetSourceWithCast(MemberReference source)
+        {
+            var source_ = source as TypeReference;
+            if (source_ == null)
                 return false;
 
-            return MemberReferenceMixin.AreSameDeclaration(Source, other.Source);
+            return TrySetSourceWithCast(source_);
         }
 
-        public int CompareTo(object obj)
+        public virtual bool TrySetSourceWithCast(TypeReference source)
         {
-            var other = default(EquatableTypeReference);
-            if ((other = obj as EquatableTypeReference) == null)
-                return 1;
+            return base.TrySetSourceWithCast(source);
+        }
 
-            return MemberReferenceMixin.CompareByDeclaration(Source, other.Source);
+        public bool Equals(EquatableTypeReference other)
+        {
+            return base.Equals(other);
+        }
+
+        public int CompareTo(EquatableTypeReference other)
+        {
+            return base.CompareTo(other);
         }
     }
 }

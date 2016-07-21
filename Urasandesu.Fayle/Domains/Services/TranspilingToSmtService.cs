@@ -34,9 +34,9 @@ using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Urasandesu.Fayle.Domains.Blocks;
-using Urasandesu.Fayle.Domains.Forms;
-using Urasandesu.Fayle.Domains.Instructions;
+using Urasandesu.Fayle.Domains.IR;
+using Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis;
+using Urasandesu.Fayle.Mixins.Mono.Cecil;
 using Urasandesu.Fayle.Mixins.Urasandesu.Fayle.Infrastructures;
 
 namespace Urasandesu.Fayle.Domains.Services
@@ -84,23 +84,35 @@ namespace Urasandesu.Fayle.Domains.Services
             m_smtInstRepos = smtInstRepos;
         }
 
-        public SmtForm Transpile(MethodDefinition methDef)
+        public SmtForm Transpile(MethodDefinition method)
         {
-            var ssaForm = SsaFormBuilder.Build(methDef);
-            return TranspileForm(methDef, ssaForm);
+            return Transpile(new EquatableMethodDefinition(method).ResolvePreserve());
         }
 
-        SmtForm TranspileForm(MethodDefinition methDef, SsaForm ssaForm)
+        public SmtForm Transpile(GenericInstanceMethod method)
         {
-            var smtForm = m_smtFormFactory.NewInstance(methDef, ssaForm);
-            smtForm.Blocks = TranspileBlocks(smtForm, ssaForm).ToArray();
-            m_smtFormRepos.AddOrUpdate(smtForm);
-            return m_smtFormRepos.FindOneBy(new SmtFormId(methDef));
+            return Transpile(new EquatableGenericInstanceMethod(method).ResolvePreserve());
         }
 
-        IEnumerable<SmtBlock> TranspileBlocks(SmtForm smtForm, SsaForm ssaForm)
+        public SmtForm Transpile(EquatablePreservedMethod method)
         {
-            foreach (var ssaBlock in ssaForm.Blocks)
+            var eqMethDef = method.Resolve();
+            var ssaForm = SsaFormBuilder.Build(eqMethDef.Source);
+            var eqSsaForm = new EquatableSsaForm(ssaForm, eqMethDef);
+            return TranspileForm(method, eqSsaForm);
+        }
+
+        SmtForm TranspileForm(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm)
+        {
+            var smtForm = m_smtFormFactory.NewInstance(eqPrsrvdMeth, eqSsaForm);
+            smtForm.Blocks = TranspileBlocks(smtForm, eqSsaForm).ToArray();
+            m_smtFormRepos.Store(smtForm);
+            return m_smtFormRepos.FindOneBy(eqPrsrvdMeth);
+        }
+
+        IEnumerable<SmtBlock> TranspileBlocks(SmtForm smtForm, EquatableSsaForm eqSsaForm)
+        {
+            foreach (var ssaBlock in eqSsaForm.Blocks)
                 TranspileInstructions(smtForm, ssaBlock);
 
             var smtBlocks = m_smtBlockRepos.FindBy(smtForm.BlockHasSameParentForm);
@@ -113,21 +125,46 @@ namespace Urasandesu.Fayle.Domains.Services
                 smtBlock.Normals = m_smtInstRepos.FindBy(smtBlock.InstructionIsNormal).ToArray();
                 smtBlock.BranchPreconditions = m_smtInstRepos.FindBy(smtBlock.InstructionIsBranchPrecondition).ToArray();
                 smtBlock.ExceptionGuards = m_smtInstRepos.FindBy(smtBlock.InstructionIsExceptionGuard).ToArray();
-                m_smtBlockRepos.TryUpdate(smtBlock);
+                m_smtBlockRepos.TryStore(smtBlock);
             }
             return m_smtBlockRepos.FindBy(smtForm.BlockHasSameParentForm);
         }
 
-        void TranspileInstructions(SmtForm smtForm, SsaBlock ssaBlock)
+        void TranspileInstructions(SmtForm smtForm, EquatableSsaBlock eqSsaBlock)
         {
-            foreach (var smtInst in m_smtInstFactory.NewUnlinkedInstances(smtForm.TargetMethod, smtForm.Form, ssaBlock))
+            foreach (var smtInst in m_smtInstFactory.NewUnlinkedInstances(smtForm.Id, smtForm.Form, eqSsaBlock))
             {
-                var smtBlock = m_smtBlockFactory.NewInstance(smtForm, ssaBlock, smtInst);
-                smtBlock = m_smtBlockRepos.GetOrAdd(smtBlock);
+                var smtBlock = m_smtBlockFactory.NewInstance(smtForm, eqSsaBlock, smtInst);
+                smtBlock = m_smtBlockRepos.FindOrStore(smtBlock);
 
                 smtInst.LinkTo(smtBlock.Id);
-                m_smtInstRepos.AddOrUpdate(smtInst);
+                m_smtInstRepos.Store(smtInst);
             }
+        }
+
+        public SmtForm TranspileToEmptyForm(MethodDefinition method)
+        {
+            return TranspileToEmptyForm(new EquatableMethodDefinition(method).ResolvePreserve());
+        }
+
+        public SmtForm TranspileToEmptyForm(GenericInstanceMethod method)
+        {
+            return TranspileToEmptyForm(new EquatableGenericInstanceMethod(method).ResolvePreserve());
+        }
+
+        public SmtForm TranspileToEmptyForm(EquatablePreservedMethod method)
+        {
+            var eqMethDef = method.Resolve();
+            var ssaForm = SsaFormBuilder.Build(eqMethDef.Source);
+            var eqSsaForm = new EquatableSsaForm(ssaForm, eqMethDef);
+            return TranspileToEmptyForm(method, eqSsaForm);
+        }
+
+        SmtForm TranspileToEmptyForm(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm)
+        {
+            var smtForm = m_smtFormFactory.NewInstance(eqPrsrvdMeth, eqSsaForm);
+            m_smtFormRepos.Store(smtForm);
+            return m_smtFormRepos.FindOneBy(eqPrsrvdMeth);
         }
     }
 }
