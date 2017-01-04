@@ -40,17 +40,8 @@ using Urasandesu.Fayle.Mixins.Mono.Cecil;
 
 namespace Urasandesu.Fayle.Domains.SmtLib
 {
-    public class SmtLibStringContext : Entity<SmtLibStringContext>
+    public class SmtLibStringContext : SelfIdentifiedEntity<SmtLibStringContext>
     {
-        public override SmtLibStringContext Id
-        {
-            get { return this; }
-            set
-            {
-                throw new NotSupportedException(string.Format("This entity '{0}' does not support to set ID from the outside.", GetType()));
-            }
-        }
-
         readonly ConcurrentDictionary<InvocationSite, SmtLibStringCollectionGroup> m_otherFullPathCoveredStrings = new ConcurrentDictionary<InvocationSite, SmtLibStringCollectionGroup>();
         internal SmtLibStringCollectionGroup GetOtherFullPathCoveredStrings(InvocationSite @is)
         {
@@ -87,6 +78,7 @@ namespace Urasandesu.Fayle.Domains.SmtLib
 
 
 
+        readonly ConcurrentDictionary<EquatableMethodDefinition, int> m_calledMeths = new ConcurrentDictionary<EquatableMethodDefinition, int>();
         readonly ConcurrentStack<EquatableSsaInstruction> m_callStack = new ConcurrentStack<EquatableSsaInstruction>();
         internal int CallHierarchy
         {
@@ -98,10 +90,11 @@ namespace Urasandesu.Fayle.Domains.SmtLib
             m_callStack.Push(invocableInst);
         }
 
-        internal void PopCallStack()
+        internal void PopCallStack(EquatableMethodDefinition calledMethod)
         {
             var _ = default(EquatableSsaInstruction);
             m_callStack.TryPop(out _);
+            m_calledMeths.AddOrUpdate(calledMethod, 1, (key, value) => Interlocked.Increment(ref value));
         }
 
 
@@ -127,16 +120,11 @@ namespace Urasandesu.Fayle.Domains.SmtLib
             }
         }
 
-        internal InvocationSite PushInvocationSite(InvocationSite @is)
-        {
-            m_iss.Push(@is);
-            return @is;
-        }
-
         internal InvocationSite PushInvocationSite(EquatablePreservedMethod targetMethod)
         {
             var @is = NextInvocationSite(targetMethod);
-            return PushInvocationSite(@is);
+            m_iss.Push(@is);
+            return @is;
         }
 
         internal InvocationSite PopInvocationSite()
@@ -153,12 +141,12 @@ namespace Urasandesu.Fayle.Domains.SmtLib
 
 
 
-        readonly ConcurrentDictionary<SsaInstructionGroup, int> m_pathNums = new ConcurrentDictionary<SsaInstructionGroup, int>();
-        internal SsaInstructionGroup AddCoverageIncreasablePath(SsaInstructionGroup grp)
+        readonly ConcurrentDictionary<InstructionGroup, int> m_pathNums = new ConcurrentDictionary<InstructionGroup, int>();
+        internal InstructionGroup AddCoverageIncreasablePathNumber(InstructionGroup grp)
         {
             var grp0 = grp.GetFirstPathGroup();
             var pathNum = m_pathNums.AddOrUpdate(grp0, 1, (key, value) => Interlocked.Increment(ref value));
-            return new SsaInstructionGroup(grp, pathNum);
+            return new InstructionGroup(grp, pathNum);
         }
 
 
@@ -175,7 +163,7 @@ namespace Urasandesu.Fayle.Domains.SmtLib
             if (target == null)
                 throw new ArgumentNullException("target");
 
-            var varAssign = new VariableAssignment(CurrentInvocationSite, m_callStack, inst, source, target);
+            var varAssign = new VariableAssignment(CurrentInvocationSite, m_callStack, inst, m_calledMeths, source, target);
             var relationIsLatest = new AssignmentRelationIsLatest(varAssign);
             return m_assignRltns.FindAll(relationIsLatest).LastOrDefault();
         }
@@ -191,7 +179,7 @@ namespace Urasandesu.Fayle.Domains.SmtLib
             if (target == null)
                 throw new ArgumentNullException("target");
 
-            var varAssign = new VariableAssignment(CurrentInvocationSite, m_callStack, inst, source, target);
+            var varAssign = new VariableAssignment(CurrentInvocationSite, m_callStack, inst, m_calledMeths, source, target);
             if (m_assignRltns.Find(varAssign) != null)
                 return;
 
@@ -217,6 +205,15 @@ namespace Urasandesu.Fayle.Domains.SmtLib
 
                 foreach (var ancestor in GetAncestorAssignmentRelationsCore(parent, hash))
                     yield return ancestor;
+            }
+        }
+
+        public void ResetAssignmentRelation()
+        {
+            if (m_callStack.Count == 0)
+            {
+                m_calledMeths.Clear();
+                m_assignRltns.Clear();
             }
         }
     }

@@ -1,10 +1,10 @@
 ﻿/* 
- * File: AssignmentRelationIsLatest.cs
+ * File: SelfIdentifiedEntity`1.cs
  * 
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
  * 
- * Copyright (c) 2016 Akira Sugiura
+ * Copyright (c) 2017 Akira Sugiura
  *  
  *  This software is MIT License.
  *  
@@ -30,35 +30,16 @@
 
 
 using System;
-using Urasandesu.Fayle.Infrastructures;
 
-namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
+namespace Urasandesu.Fayle.Infrastructures
 {
-    public struct AssignmentRelationIsLatest : ISpecification
+    public abstract class SelfIdentifiedEntity<TId> : EntityBase<TId> where TId : SelfIdentifiedEntity<TId>
     {
-        readonly VariableAssignment m_varAssign;
-
-        public AssignmentRelationIsLatest(VariableAssignment varAssign)
-            : this()
+        public override TId Id
         {
-            if (!varAssign.IsValid)
-                throw new ArgumentException("The parameter must be valid.", "varAssign");
-
-            m_varAssign = varAssign;
-        }
-
-        public bool IsSatisfiedBy(AssignmentRelation obj)
-        {
-            if (obj == null)
-                return false;
-
-            return obj.Offset < m_varAssign.Offset &&
-                   object.Equals(obj.LatestSourceOriginalVariable, m_varAssign.Source.OriginalVariable);
-        }
-
-        bool ISpecification.IsSatisfiedBy(object obj)
-        {
-            return IsSatisfiedBy(obj as AssignmentRelation);
+            get { return (TId)this; }
+            set { throw new NotSupportedException("'Id' is always this class's self."); }
         }
     }
 }
+

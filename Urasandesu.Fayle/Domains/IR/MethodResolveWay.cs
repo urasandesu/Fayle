@@ -35,7 +35,7 @@ using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Domains.IR
 {
-    public class MethodResolveWay : Entity<MethodResolveWay>, IDisposable
+    public class MethodResolveWay : SelfIdentifiedEntity<MethodResolveWay>, IDisposable
     {
         bool m_disposed;
 

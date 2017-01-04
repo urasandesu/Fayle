@@ -1,5 +1,5 @@
 ﻿/* 
- * File: AssignmentRelationIsLatest.cs
+ * File: SmtBlockIsSuccessor.cs
  * 
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
@@ -29,36 +29,41 @@
 
 
 
-using System;
+using System.Collections.Generic;
 using Urasandesu.Fayle.Infrastructures;
+using Urasandesu.Fayle.Mixins.System;
 
-namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
+namespace Urasandesu.Fayle.Domains.IR
 {
-    public struct AssignmentRelationIsLatest : ISpecification
+    public struct SmtBlockIsSuccessor : ISpecification
     {
-        readonly VariableAssignment m_varAssign;
+        readonly HashSet<Index> m_successorIndexes;
 
-        public AssignmentRelationIsLatest(VariableAssignment varAssign)
+        public SmtBlockIsSuccessor(SmtBlockId blockId)
             : this()
         {
-            if (!varAssign.IsValid)
-                throw new ArgumentException("The parameter must be valid.", "varAssign");
-
-            m_varAssign = varAssign;
+            m_successorIndexes = new HashSet<Index>();
+            var successors = blockId.OriginalSuccessors;
+            foreach (var successor in successors)
+                if (blockId.IsNextSuccessor(successor))
+                    m_successorIndexes.Add(successor.BlockIndex);
         }
 
-        public bool IsSatisfiedBy(AssignmentRelation obj)
+        public bool IsSatisfiedBy(SmtBlock obj)
         {
+            if (m_successorIndexes == null)
+                return false;
+
             if (obj == null)
                 return false;
 
-            return obj.Offset < m_varAssign.Offset &&
-                   object.Equals(obj.LatestSourceOriginalVariable, m_varAssign.Source.OriginalVariable);
+            return m_successorIndexes.Contains(obj.BlockIndex);
         }
 
         bool ISpecification.IsSatisfiedBy(object obj)
         {
-            return IsSatisfiedBy(obj as AssignmentRelation);
+            return IsSatisfiedBy(obj as SmtBlock);
         }
     }
 }
+

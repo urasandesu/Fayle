@@ -29,6 +29,8 @@
 
 
 
+using System;
+using Urasandesu.Fayle.Domains.SmtLib;
 using Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis;
 
 namespace Urasandesu.Fayle.Domains.IR
@@ -37,8 +39,33 @@ namespace Urasandesu.Fayle.Domains.IR
     {
         public SmtBlock NewInstance(SmtForm smtForm, EquatableSsaBlock eqSsaBlock, SmtInstruction smtInst)
         {
+            if (smtForm == null)
+                throw new ArgumentNullException("smtForm");
+
+            if (eqSsaBlock == null)
+                throw new ArgumentNullException("eqSsaBlock");
+
+            if (smtInst == null)
+                throw new ArgumentNullException("smtInst");
+
             var smtBlock = new SmtBlock();
-            smtBlock.Id = new SmtBlockId(smtForm.Id, eqSsaBlock, smtInst.Id.Kind);
+            if (!smtInst.IsExceptionSource)
+                smtBlock.Id = new SmtBlockId(smtForm.Id, eqSsaBlock, smtInst.Kind);
+            else
+                smtBlock.Id = new SmtBlockId(smtForm.Id, smtInst.ExceptionSource, smtInst.Kind);
+            return smtBlock;
+        }
+
+        public SmtBlock NewNormalInstance(SmtForm smtForm, EquatableSsaBlock eqSsaBlock)
+        {
+            if (smtForm == null)
+                throw new ArgumentNullException("smtForm");
+
+            if (eqSsaBlock == null)
+                throw new ArgumentNullException("eqSsaBlock");
+
+            var smtBlock = new SmtBlock();
+            smtBlock.Id = new SmtBlockId(smtForm.Id, eqSsaBlock, SmtLibStringKind.Normal);
             return smtBlock;
         }
     }

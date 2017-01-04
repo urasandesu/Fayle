@@ -45,14 +45,14 @@ namespace Urasandesu.Fayle.Domains.IR
 
         public bool IsSatisfiedBy(SmtInstruction obj)
         {
-            if (m_parentBlockId.Kind.Type != SsaInstructionTypes.Branch)
+            if (m_parentBlockId.Kind.Type != InstructionTypes.Branch)
                 return false;
 
             if (obj == null)
                 return false;
 
             return obj.ParentBlockIndex == m_parentBlockId.BlockIndex && 
-                   obj.Type == SsaInstructionTypes.Normal && 
+                   obj.Type == InstructionTypes.Normal && 
                    obj.ExceptionGroup == m_parentBlockId.ExceptionGroup && 
                    obj.ExceptionSourceIndex == m_parentBlockId.ExceptionSourceIndex;
         }

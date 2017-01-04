@@ -37,6 +37,7 @@ using Urasandesu.Fayle.Domains.SmtLib;
 using Urasandesu.Fayle.Domains.Z3.Exprs;
 using Urasandesu.Fayle.Infrastructures;
 using Urasandesu.Fayle.Mixins.Microsoft.Z3;
+using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Domains.Z3
 {
@@ -173,7 +174,7 @@ namespace Urasandesu.Fayle.Domains.Z3
         public override int GetHashCode()
         {
             var hashCode = 0;
-            hashCode ^= Object != null ? Object.GetHashCode() : 0;
+            hashCode ^= ObjectMixin.GetHashCode(Object);
             return hashCode;
         }
 
@@ -256,7 +257,7 @@ namespace Urasandesu.Fayle.Domains.Z3
             var result = default(DatatypesSentence);
             if (!TryGetTypeSentence(name, range, domain, out result))
             {
-                var msg = string.Format("'({0} {1} (({2})))' is not found.", name, range, (domain == null ? null : string.Join(", ", domain.Select(_ => _ + ""))));
+                var msg = string.Format("'({0} {1} (({2})))' is not found.", name, range, (domain.Maybe(o => string.Join(", ", o.Select(_ => _ + "")))));
                 throw new KeyNotFoundException(msg);
             }
 

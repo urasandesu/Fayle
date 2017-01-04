@@ -33,6 +33,8 @@ using Microsoft.Z3;
 using System;
 using System.Linq;
 using Urasandesu.Fayle.Domains.SmtLib;
+using Urasandesu.Fayle.Mixins.System;
+using Urasandesu.Fayle.Mixins.System.Linq;
 
 namespace Urasandesu.Fayle.Domains.Z3
 {
@@ -40,10 +42,7 @@ namespace Urasandesu.Fayle.Domains.Z3
     {
         public TypeSentenceGetEventArgs(string name, Sort range, params Sort[] domain)
         {
-            HasTargetMember = new DatatypesSentenceConstainsSort(
-                                    name,
-                                    range == null ? null : range.SExpr(),
-                                    domain == null ? null : domain.Select(_ => _.SExpr()).ToArray());
+            HasTargetMember = new DatatypesSentenceConstainsSort(name, range.Maybe(o => o.SExpr()), domain.Maybe(o => o.WhereNotNull().Select(_ => _.SExpr()).ToArray()));
         }
 
         public DatatypesSentenceConstainsSort HasTargetMember { get; private set; }

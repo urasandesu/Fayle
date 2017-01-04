@@ -68,6 +68,16 @@ namespace Urasandesu.Fayle.Domains.IR.Instructions
                 yield return new SmtLibString(new SmtLibStringPart("(assert (not {0}))", dtSent.GetGreaterOrEqualInvocation(ctx, target, operand)), Id.StringAttribute);
                 yield break;
             }
+            else if (Id.Instruction.Instruction.OpCode == OpCodes.Blt_S)
+            {
+                var ssaVar = Id.Instruction.Operands[0];
+                var eqPrsrvdType = Method.GetStackType(ssaVar).ResolvePreserve();
+                var dtSent = ResolveTypeSentence(eqPrsrvdType);
+                var target = ssaVar.Name;
+                var operand = Id.Instruction.Operands[1].Name;
+                yield return new SmtLibString(new SmtLibStringPart("(assert (not {0}))", dtSent.GetLessThanInvocation(ctx, target, operand)), Id.StringAttribute);
+                yield break;
+            }
             else if (Id.Instruction.Instruction.OpCode == OpCodes.Ble_S)
             {
                 var ssaVar = Id.Instruction.Operands[0];
@@ -86,6 +96,11 @@ namespace Urasandesu.Fayle.Domains.IR.Instructions
                 var target = ssaVar.Name;
                 var operand = Id.Instruction.Operands[1].Name;
                 yield return new SmtLibString(new SmtLibStringPart("(assert (not {0}))", dtSent.GetNotEqualInvocation(ctx, target, operand)), Id.StringAttribute);
+                yield break;
+            }
+            else if (Id.Instruction.Instruction.OpCode == OpCodes.Br ||
+                     Id.Instruction.Instruction.OpCode == OpCodes.Br_S)
+            {
                 yield break;
             }
 

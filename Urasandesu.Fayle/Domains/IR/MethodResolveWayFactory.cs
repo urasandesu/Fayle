@@ -38,7 +38,6 @@ namespace Urasandesu.Fayle.Domains.IR
         public MethodResolveWay NewInstance(Disposable<TypeResolveWay> depentTypeRslvWay, IMethodResolveWayEventHandler[] additionalHandlers)
         {
             var methRslvWay = new MethodResolveWay();
-            methRslvWay.Id = methRslvWay;
             methRslvWay.SetDependentTypeResolveWay(depentTypeRslvWay);
             methRslvWay.AdditionalMethodHandlers = additionalHandlers;
             return methRslvWay;

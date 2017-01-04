@@ -55,7 +55,7 @@ namespace Urasandesu.Fayle.Domains.SmtLib.Sentences
         public override SmtLibStringPart GetEqualNullInvocation(SmtLibStringContext ctx, string target)
         {
             return new SmtLibStringPart("(= {0} 0)",
-                                        GetPointerInvocation(ctx, target));
+                                        GetFirstAccessorInvocation(ctx, target));
         }
 
         public override SmtLibStringPart GetNotEqualNullInvocation(SmtLibStringContext ctx, string target)
@@ -69,6 +69,13 @@ namespace Urasandesu.Fayle.Domains.SmtLib.Sentences
             return new SmtLibStringPart("(= {0} {1})",
                                         GetFirstAccessorInvocation(ctx, target),
                                         constant);
+        }
+
+        public override SmtLibStringPart GetLessThanInvocation(SmtLibStringContext ctx, string target, string operand)
+        {
+            return new SmtLibStringPart("(< {0} {1})",
+                                        GetFirstAccessorInvocation(ctx, target),
+                                        GetFirstAccessorInvocation(ctx, operand));
         }
 
         public override SmtLibStringPart GetLessOrEqualInvocation(SmtLibStringContext ctx, string target, string operand)

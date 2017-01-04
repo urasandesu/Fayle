@@ -38,7 +38,7 @@ namespace Urasandesu.Fayle.Domains.IR
 {
     public interface ISmtDeclarativeInstructionFactory
     {
-        IEnumerable<DeclarativeInstruction> NewUnlinkedDeclarativeInstances(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor);
+        IEnumerable<DeclarativeInstruction> NewUnlinkedDeclarativeInstances(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor);
     }
 }
 

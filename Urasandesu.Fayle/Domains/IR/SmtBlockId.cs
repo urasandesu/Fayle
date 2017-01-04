@@ -29,12 +29,15 @@
 
 
 
+using ICSharpCode.Decompiler.FlowAnalysis;
 using System;
+using System.Collections.ObjectModel;
 using Urasandesu.Fayle.Domains.SmtLib;
 using Urasandesu.Fayle.Infrastructures;
 using Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis;
 using Urasandesu.Fayle.Mixins.Mono.Cecil;
 using Urasandesu.Fayle.Mixins.System;
+using Urasandesu.Fayle.Mixins.System.Linq;
 
 namespace Urasandesu.Fayle.Domains.IR
 {
@@ -43,6 +46,12 @@ namespace Urasandesu.Fayle.Domains.IR
         public SmtBlockId(EquatableMethodReference parentFormId, EquatableSsaBlock block, SmtLibStringKind kind)
             : this()
         {
+            if (parentFormId == null)
+                throw new ArgumentNullException("parentFormId");
+
+            if (block == null)
+                throw new ArgumentNullException("block");
+
             ParentFormId = parentFormId;
             Block = block;
             BlockIndex = block.BlockIndex;
@@ -57,10 +66,16 @@ namespace Urasandesu.Fayle.Domains.IR
         public EquatableSsaBlock Block { get; private set; }
         public Index BlockIndex { get; private set; }
 
-        public bool IsAssertion { get { return Kind.IsAssertion; } }
-        public SsaExceptionGroup ExceptionGroup { get { return Kind.ExceptionGroup; } }
+        public bool HasAssertion { get { return Kind.IsAssertion; } }
+        public ExceptionGroup ExceptionGroup { get { return Kind.ExceptionGroup; } }
         public EquatableSsaBlock ExceptionSource { get { return Kind.ExceptionSource; } }
         public Index ExceptionSourceIndex { get { return Kind.ExceptionSourceIndex; } }
+        public bool IsExceptionThrowable { get { return Kind.IsExceptionThrowable; } }
+        public bool HasDeclaration { get { return Kind.IsDeclaration; } }
+
+        public ControlFlowNodeType NodeType { get { return Block == null ? ControlFlowNodeType.Normal : Block.NodeType; } }
+
+        public bool HasBranchInstruction { get { return Block == null ? false : Block.HasBranchInstruction; } }
 
         public override bool Equals(object obj)
         {
@@ -94,7 +109,7 @@ namespace Urasandesu.Fayle.Domains.IR
                 return 0;
 
             var hashCode = 0;
-            hashCode ^= ParentFormId.GetHashCode();
+            hashCode ^= ObjectMixin.GetHashCode(ParentFormId);
             hashCode ^= BlockIndex.GetHashCode();
             hashCode ^= Kind.GetHashCode();
             return hashCode;
@@ -121,7 +136,7 @@ namespace Urasandesu.Fayle.Domains.IR
                 return !other.IsValid ? 0 : -1;
 
             var result = 0;
-            if ((result = ParentFormId.CompareTo(other.ParentFormId)) != 0)
+            if ((result = EquatableMemberReference.DefaultComparer.Compare(ParentFormId, other.ParentFormId)) != 0)
                 return result;
 
             if ((result = BlockIndex.CompareTo(other.BlockIndex)) != 0)
@@ -131,6 +146,49 @@ namespace Urasandesu.Fayle.Domains.IR
                 return result;
 
             return result;
+        }
+
+        public ReadOnlyCollection<EquatableSsaBlock> OriginalPredecessors
+        {
+            get
+            {
+                return ExceptionSource != null ?
+                            ExceptionSource.Predecessors :
+                            Block != null ?
+                                Block.Predecessors :
+                                EnumerableMixin.EmptyReadOnlyCollection<EquatableSsaBlock>();
+            }
+        }
+
+        public ReadOnlyCollection<EquatableSsaBlock> OriginalSuccessors
+        {
+            get
+            {
+                return Block == null ? EnumerableMixin.EmptyReadOnlyCollection<EquatableSsaBlock>() : Block.Successors;
+            }
+        }
+
+        public bool IsNextSuccessor(EquatableSsaBlock successor)
+        {
+            if (successor == null)
+                throw new ArgumentNullException("successor");
+
+            if (Block == null)
+                return false;
+
+            if (HasDeclaration)
+                return false;
+
+            if (IsExceptionThrowable)
+                return successor.NodeType == ControlFlowNodeType.ExceptionalExit;
+
+            if (Kind.Type == InstructionTypes.Branch)
+                return successor.HasBranchTargetOf(Block);
+
+            if (successor.NodeType == ControlFlowNodeType.ExceptionalExit)
+                return false;
+
+            return !successor.HasBranchTargetOf(Block);
         }
     }
 }

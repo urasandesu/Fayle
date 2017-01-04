@@ -29,9 +29,10 @@
 
 
 
-using System;
+using ICSharpCode.Decompiler.FlowAnalysis;
 using System.Collections.Generic;
 using Urasandesu.Fayle.Domains.SmtLib;
+using Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis;
 
 namespace Urasandesu.Fayle.Domains.IR.Instructions
 {
@@ -39,7 +40,19 @@ namespace Urasandesu.Fayle.Domains.IR.Instructions
     {
         public override IEnumerable<SmtLibString> GetSmtLibStrings(SmtLibStringContext ctx)
         {
-            throw new NotImplementedException(string.Format("The instruction '{0}' is not implemented.", Id.Instruction));
+            var newTent = GetNewTentativeName();
+
+            var eqVarDef = Method.Resolve().GetVariable(Id.Instruction);
+            var source = new EquatableSsaVariable(new SsaVariable(eqVarDef.Source) { Definition = Id.Instruction.Source }, Method.Resolve());
+            var target = new EquatableSsaVariable(source, newTent, Method.Resolve());
+            ctx.UpdateAssignmentRelation(Id.Instruction, source, target);
+
+            var eqPrsrvdType = eqVarDef.VariableType.ResolvePreserve();
+            var dtSent = ResolveTypeSentence(eqPrsrvdType);
+
+            var operand = Id.Instruction.Operands[0].Name;
+
+            yield return new SmtLibString(new SmtLibStringPart("(assert {0})", dtSent.GetEqualInvocation(ctx, newTent, operand)), Id.StringAttribute);
         }
     }
 }

@@ -31,7 +31,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Mixins.System.Linq
 {
@@ -59,14 +61,72 @@ namespace Urasandesu.Fayle.Mixins.System.Linq
             return true;
         }
 
-        public static bool NullableSequenceEqual<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second)
+        public static bool NullableDictionaryEqual<TKey, TValue>(this IDictionary<TKey, TValue> first, IDictionary<TKey, TValue> second)
         {
             if (first == null && second == null)
                 return true;
             else if (first == null || second == null)
                 return false;
+            else if (object.ReferenceEquals(first, second))
+                return true;
 
-            return first.SequenceEqual(second);
+            var keyComparer = BaseEqualityComparer<KeyValuePair<TKey, TValue>>.Make((_1, _2) => object.Equals(_1.Key, _2.Key), _ => ObjectMixin.GetHashCode(_.Key));
+            return first.Count == second.Count && !first.Except(second, keyComparer).Any();
+        }
+
+        public static bool NullableSequenceEqual<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second)
+        {
+            return NullableSequenceEqual(first, second, BaseEqualityComparer<TSource>.Make());
+        }
+
+        public static bool NullableSequenceEqual<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second, IEqualityComparer<TSource> comparer)
+        {
+            if (first == null && second == null)
+                return true;
+            else if (first == null || second == null)
+                return false;
+            else if (object.ReferenceEquals(first, second))
+                return true;
+
+            return first.SequenceEqual(second, comparer);
+        }
+
+        public static IEnumerable<TSource> WhereNotNull<TSource>(this IEnumerable<TSource> source)
+        {
+            return source.Where(_ => _ != null);
+        }
+
+        public static int NullableSequenceGetHashCode<TSource>(this IEnumerable<TSource> source)
+        {
+            return NullableSequenceGetHashCode(source, _ => _.GetHashCode());
+        }
+
+        public static int NullableSequenceGetHashCode<TSource>(this IEnumerable<TSource> source, Func<TSource, int> hash)
+        {
+            if (hash == null)
+                throw new ArgumentNullException("hash");
+
+            if (source == null)
+                return 0;
+
+            return source.Aggregate(0, (result, next) => result ^ (next != null ? hash(next) : 0));
+        }
+
+        public static int NullableDictionaryGetHashCode<TKey, TValue>(this IDictionary<TKey, TValue> source)
+        {
+            if (source == null)
+                return 0;
+
+            return NullableSequenceGetHashCode(source, _ => ObjectMixin.GetHashCode(_.Key));
+        }
+
+        class EmptyReadOnlyCollectionHolder<T>
+        {
+            public static readonly ReadOnlyCollection<T> Value = new ReadOnlyCollection<T>(new T[0]);
+        }
+        public static ReadOnlyCollection<T> EmptyReadOnlyCollection<T>()
+        {
+            return EmptyReadOnlyCollectionHolder<T>.Value;
         }
     }
 }

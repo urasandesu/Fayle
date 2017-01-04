@@ -49,9 +49,9 @@ namespace Urasandesu.Fayle.Domains.IR
             if (obj == null)
                 return false;
 
-            return obj.ParentBlockIndex == SmtBlock.ExceptionalExitIndex &&
-                   obj.Type == SsaInstructionTypes.Normal &&
-                   obj.ExceptionGroup == SsaExceptionGroup.AllNormal &&
+            return //obj.ParentBlockIndex == SmtBlock.ExceptionalExitIndex &&
+                   obj.Type == InstructionTypes.Normal &&
+                   obj.ExceptionGroup == ExceptionGroup.AllNormal &&
                    obj.ExceptionSourceIndex == m_exSrcBlockId.BlockIndex;
         }
 

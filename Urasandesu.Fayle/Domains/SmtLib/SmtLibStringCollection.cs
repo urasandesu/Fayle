@@ -38,15 +38,21 @@ using Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis;
 
 namespace Urasandesu.Fayle.Domains.SmtLib
 {
-    public class SmtLibStringCollection : Entity<SsaInstructionGroup>, IEnumerable<SmtLibString>
+    public class SmtLibStringCollection : Entity<InstructionGroup>, IEnumerable<SmtLibString>
     {
         readonly IEnumerable<SmtLibString> m_ss;
 
-        public SmtLibStringCollection(IEnumerable<SmtLibString> ss)
+        public InstructionGroupedShortestPath Path { get; private set; }
+
+        public SmtLibStringCollection(InstructionGroupedShortestPath path, IEnumerable<SmtLibString> ss)
         {
+            if (path == null)
+                throw new ArgumentNullException("path");
+
             if (ss == null)
                 throw new ArgumentNullException("ss");
 
+            Path = path;
             m_ss = ss;
         }
 
@@ -70,28 +76,28 @@ namespace Urasandesu.Fayle.Domains.SmtLib
             if (ctx == null)
                 throw new ArgumentNullException("ctx");
 
-            var grpsss = new List<Tuple<SsaInstructionGroup, List<SmtLibString>>>();
-            grpsss.Add(Tuple.Create(Id, new List<SmtLibString>()));
+            var grpsss = new List<Tuple<InstructionGroup, InstructionGroupedShortestPath, List<SmtLibString>>>();
+            grpsss.Add(Tuple.Create(Id, Path, new List<SmtLibString>()));
             foreach (var s in m_ss)
             {
                 var ctxscs = s.ExtractContext(ctx);
                 if (!ctxscs.Any())
                 {
                     foreach (var grpss in grpsss)
-                        grpss.Item2.Add(s);
+                        grpss.Item3.Add(s);
                 }
                 else
                 {
-                    var newgrpsss = new List<Tuple<SsaInstructionGroup, List<SmtLibString>>>();
+                    var newgrpsss = new List<Tuple<InstructionGroup, InstructionGroupedShortestPath, List<SmtLibString>>>();
                     foreach (var grpss in grpsss)
                     {
                         foreach (var ctxc in ctxscs)
                         {
-                            newgrpsss.Add(Tuple.Create(ctx.AddCoverageIncreasablePath(ctxc.Id), new List<SmtLibString>()));
+                            newgrpsss.Add(Tuple.Create(ctx.AddCoverageIncreasablePathNumber(ctxc.Id), Path, new List<SmtLibString>()));
                             var newss = newgrpsss[newgrpsss.Count - 1];
                             var hash = new HashSet<SmtLibString>();
-                            newss.Item2.AddRange(grpss.Item2.Where(hash.Add));
-                            newss.Item2.AddRange(ctxc.Where(hash.Add));
+                            newss.Item3.AddRange(grpss.Item3.Where(hash.Add));
+                            newss.Item3.AddRange(ctxc.Where(hash.Add));
                         }
                     }
                     grpsss = newgrpsss;
@@ -99,7 +105,7 @@ namespace Urasandesu.Fayle.Domains.SmtLib
             }
 
             foreach (var grpss in grpsss)
-                yield return new SmtLibStringCollection(grpss.Item2) { Id = grpss.Item1 };
+                yield return new SmtLibStringCollection(grpss.Item2, grpss.Item3) { Id = grpss.Item1 };
         }
     }
 }

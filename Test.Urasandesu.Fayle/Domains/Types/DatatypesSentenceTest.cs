@@ -31,7 +31,9 @@
 
 using Mono.Cecil;
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Urasandesu.Fayle.Domains.SmtLib;
 using Urasandesu.Fayle.Domains.SmtLib.Sentences;
@@ -47,7 +49,7 @@ namespace Test.Urasandesu.Fayle.Domains.Types
         {
             // Arrange
             var sampleName = "HiddenBug";
-            var asmDef = AssemblyDefinition.ReadAssembly("HowDoesPexWork.dll");
+            var asmDef = AssemblyDefinition.ReadAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HowDoesPexWork.dll"));
             var modDef = asmDef.MainModule;
             var typeDef = modDef.Types.First(_ => _.Name == sampleName);
             var methDef = typeDef.Methods.First(_ => _.Name == "Puzzle");
@@ -70,7 +72,7 @@ namespace Test.Urasandesu.Fayle.Domains.Types
         {
             // Arrange
             var sampleName = "HiddenBug";
-            var asmDef = AssemblyDefinition.ReadAssembly("HowDoesPexWork.dll");
+            var asmDef = AssemblyDefinition.ReadAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HowDoesPexWork.dll"));
             var modDef = asmDef.MainModule;
             var typeDef = modDef.Types.First(_ => _.Name == sampleName);
             var methDef = typeDef.Methods.First(_ => _.Name == "Puzzle");
@@ -91,7 +93,7 @@ namespace Test.Urasandesu.Fayle.Domains.Types
         {
             // Arrange
             var sampleName = "StateRelationForClass";
-            var asmDef = AssemblyDefinition.ReadAssembly("HowDoesPexWork.dll");
+            var asmDef = AssemblyDefinition.ReadAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HowDoesPexWork.dll"));
             var modDef = asmDef.MainModule;
             var typeDef = modDef.Types.First(_ => _.Name == sampleName);
             var methDef = typeDef.Methods.First(_ => _.Name == "Puzzle");
@@ -112,7 +114,7 @@ namespace Test.Urasandesu.Fayle.Domains.Types
         {
             // Arrange
             var sampleName = "HiddenBug";
-            var asmDef = AssemblyDefinition.ReadAssembly("HowDoesPexWork.dll");
+            var asmDef = AssemblyDefinition.ReadAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HowDoesPexWork.dll"));
             var modDef = asmDef.MainModule;
             var typeDef = modDef.Types.First(_ => _.Name == sampleName);
             var methDef = typeDef.Methods.First(_ => _.Name == "Puzzle");
@@ -137,7 +139,7 @@ namespace Test.Urasandesu.Fayle.Domains.Types
         {
             // Arrange
             var sampleName = "HiddenBug";
-            var asmDef = AssemblyDefinition.ReadAssembly("HowDoesPexWork.dll");
+            var asmDef = AssemblyDefinition.ReadAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HowDoesPexWork.dll"));
             var modDef = asmDef.MainModule;
             var typeDef = modDef.Types.First(_ => _.Name == sampleName);
             var methDef = typeDef.Methods.First(_ => _.Name == "Puzzle");
@@ -158,7 +160,7 @@ namespace Test.Urasandesu.Fayle.Domains.Types
         {
             // Arrange
             var sampleName = "StateRelationForStruct";
-            var asmDef = AssemblyDefinition.ReadAssembly("HowDoesPexWork.dll");
+            var asmDef = AssemblyDefinition.ReadAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HowDoesPexWork.dll"));
             var modDef = asmDef.MainModule;
             var typeDef = modDef.Types.First(_ => _.Name == sampleName);
             var methDef = typeDef.Methods.First(_ => _.Name == "Puzzle");
@@ -182,7 +184,7 @@ namespace Test.Urasandesu.Fayle.Domains.Types
         {
             // Arrange
             var sampleName = "StateRelationForStruct";
-            var asmDef = AssemblyDefinition.ReadAssembly("HowDoesPexWork.dll");
+            var asmDef = AssemblyDefinition.ReadAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HowDoesPexWork.dll"));
             var modDef = asmDef.MainModule;
             var typeDef = modDef.Types.First(_ => _.Name == sampleName);
             var methDef = typeDef.Methods.First(_ => _.Name == "Puzzle");
@@ -204,13 +206,13 @@ namespace Test.Urasandesu.Fayle.Domains.Types
         {
             // Arrange
             var sampleName = "StateRelationForClass";
-            var asmDef = AssemblyDefinition.ReadAssembly("HowDoesPexWork.dll");
+            var asmDef = AssemblyDefinition.ReadAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HowDoesPexWork.dll"));
             var modDef = asmDef.MainModule;
             var typeDef = modDef.Types.First(_ => _.Name == sampleName);
             var methDef = typeDef.Methods.First(_ => _.Name == "Puzzle");
 
             // Act
-            var dtSent = ResolveTypeSentence(methDef.Body.Variables[0].VariableType);
+            var dtSent = ResolveTypeSentence(((MethodReference)methDef.Body.Instructions[0].Operand).DeclaringType);
 
             // Assert
             CollectionAssert.AreEqual(
@@ -228,13 +230,13 @@ namespace Test.Urasandesu.Fayle.Domains.Types
         {
             // Arrange
             var sampleName = "StateRelationForClass";
-            var asmDef = AssemblyDefinition.ReadAssembly("HowDoesPexWork.dll");
+            var asmDef = AssemblyDefinition.ReadAssembly(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HowDoesPexWork.dll"));
             var modDef = asmDef.MainModule;
             var typeDef = modDef.Types.First(_ => _.Name == sampleName);
             var methDef = typeDef.Methods.First(_ => _.Name == "Puzzle");
 
             // Act
-            var dtSent = ResolveTypeSentence(methDef.Body.Variables[0].VariableType);
+            var dtSent = ResolveTypeSentence(((MethodReference)methDef.Body.Instructions[0].Operand).DeclaringType);
 
             // Assert
             Assert.IsInstanceOf<ClassSentence>(dtSent);

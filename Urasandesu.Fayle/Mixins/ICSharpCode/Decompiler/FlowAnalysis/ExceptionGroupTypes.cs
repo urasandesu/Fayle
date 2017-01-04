@@ -1,5 +1,5 @@
 ﻿/* 
- * File: SsaInstructionTypes.cs
+ * File: ExceptionGroupTypes.cs
  * 
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
@@ -31,14 +31,11 @@
 
 namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 {
-    public enum SsaInstructionTypes
+    public enum ExceptionGroupTypes
     {
-        Normal,
-        Branch,
-        PileParameter,
-        PileLocal,
-        PileField,
-        PileStack
+        NotApplicable = -1,
+        AllNormal,
+        SomethingBranch
     }
 }
 

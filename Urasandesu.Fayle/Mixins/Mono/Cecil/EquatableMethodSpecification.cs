@@ -32,7 +32,7 @@
 using Mono.Cecil;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
-{                
+{
     public abstract class EquatableMethodSpecification : EquatableMethodReference
     {
         protected EquatableMethodSpecification()

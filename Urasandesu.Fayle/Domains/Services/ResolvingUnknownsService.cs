@@ -112,7 +112,7 @@ namespace Urasandesu.Fayle.Domains.Services
                 }
                 finally
                 {
-                    e.Context.PopCallStack();
+                    e.Context.PopCallStack(e.TargetMethod.Resolve());
                 }
             }
         }

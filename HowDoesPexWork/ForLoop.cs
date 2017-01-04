@@ -1,5 +1,5 @@
 ﻿/* 
- * File: AssignmentRelationIsLatest.cs
+ * File: ForLoop.cs
  * 
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
@@ -30,35 +30,19 @@
 
 
 using System;
-using Urasandesu.Fayle.Infrastructures;
 
-namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
+namespace HowDoesPexWork
 {
-    public struct AssignmentRelationIsLatest : ISpecification
+    class ForLoop
     {
-        readonly VariableAssignment m_varAssign;
-
-        public AssignmentRelationIsLatest(VariableAssignment varAssign)
-            : this()
+        public static void Puzzle(int[] v)
         {
-            if (!varAssign.IsValid)
-                throw new ArgumentException("The parameter must be valid.", "varAssign");
-
-            m_varAssign = varAssign;
-        }
-
-        public bool IsSatisfiedBy(AssignmentRelation obj)
-        {
-            if (obj == null)
-                return false;
-
-            return obj.Offset < m_varAssign.Offset &&
-                   object.Equals(obj.LatestSourceOriginalVariable, m_varAssign.Source.OriginalVariable);
-        }
-
-        bool ISpecification.IsSatisfiedBy(object obj)
-        {
-            return IsSatisfiedBy(obj as AssignmentRelation);
+            for (var i = 0; i < v.Length; i++)
+            {
+                if (v[i] == 42)
+                    throw new Exception("for loop!");
+            }
         }
     }
 }
+

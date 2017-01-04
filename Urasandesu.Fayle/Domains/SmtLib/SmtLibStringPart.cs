@@ -32,6 +32,7 @@
 using System;
 using System.Collections.Generic;
 using Urasandesu.Fayle.Infrastructures;
+using Urasandesu.Fayle.Mixins.System;
 using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Domains.SmtLib
@@ -114,7 +115,7 @@ namespace Urasandesu.Fayle.Domains.SmtLib
                 return 0;
 
             var hashCode = 0;
-            hashCode ^= Value == null ? 0 : Value.GetHashCode();
+            hashCode ^= ObjectMixin.GetHashCode(Value);
             return hashCode;
         }
 

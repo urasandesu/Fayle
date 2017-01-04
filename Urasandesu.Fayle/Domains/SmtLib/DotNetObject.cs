@@ -30,6 +30,7 @@
 
 
 using Urasandesu.Fayle.Infrastructures;
+using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Domains.SmtLib
 {
@@ -45,7 +46,7 @@ namespace Urasandesu.Fayle.Domains.SmtLib
 
         public override string ToString()
         {
-            return string.Format("{0}[{1}]: {2}", Id, AssignmentOrder, Value == null ? "{null}" : Value.ToString());
+            return string.Format("{0}[{1}]: {2}", Id, AssignmentOrder, Value.Maybe(o => o.ToString(), "{null}"));
         }
     }
 }

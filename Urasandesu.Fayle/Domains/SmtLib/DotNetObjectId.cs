@@ -100,8 +100,8 @@ namespace Urasandesu.Fayle.Domains.SmtLib
                 return 0;
 
             var hashCode = 0;
-            hashCode ^= ConstantName != null ? ConstantName.GetHashCode() : 0;
-            hashCode ^= ConstructorName != null ? ConstructorName.GetHashCode() : 0;
+            hashCode ^= ObjectMixin.GetHashCode(ConstantName);
+            hashCode ^= ObjectMixin.GetHashCode(ConstructorName);
             hashCode ^= Pointer.GetHashCode();
             hashCode ^= Type.GetHashCode();
             return hashCode;

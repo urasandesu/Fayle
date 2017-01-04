@@ -41,7 +41,7 @@ namespace Urasandesu.Fayle.Domains.IR
 {
     public class SmtNormalAssertionFactory : ISmtNormalAssertionFactory
     {
-        public IEnumerable<AssertiveInstruction> NewUnlinkedNoneInstances(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        public IEnumerable<AssertiveInstruction> NewUnlinkedNoneInstances(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             foreach (var smtInst in NewUnlinkedOpCodeInstances(eqSsaInst, exGrp, predecessor))
             {
@@ -51,7 +51,7 @@ namespace Urasandesu.Fayle.Domains.IR
             }
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedOpCodeInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedOpCodeInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             if (eqSsaInst.Instruction.OpCode == null)
                 throw new InvalidOperationException("The OpCode must not be null.");
@@ -99,192 +99,192 @@ namespace Urasandesu.Fayle.Domains.IR
             throw new NotSupportedException(msg);
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedAddInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedAddInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new AddAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedLoadParameterInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedLoadParameterInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInsts = new List<AssertiveInstruction>(3);
             {
                 var smtInst = new LoadParameterAssertion();
-                var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+                var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
                 smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
                 smtInsts.Add(smtInst);
             }
             return smtInsts;
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedBranchInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedBranchInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInsts = new List<AssertiveInstruction>(3);
             {
                 var smtInst = new NotBranchAssertion();
-                var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+                var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
                 smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
                 smtInsts.Add(smtInst);
             }
             {
                 var smtInst = new BranchAssertion();
-                var kind = new SmtLibStringKind(SsaInstructionTypes.Branch, exGrp, predecessor);
+                var kind = new SmtLibStringKind(InstructionTypes.Branch, exGrp, predecessor);
                 smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
                 smtInsts.Add(smtInst);
             }
             return smtInsts;
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedCallMethodInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedCallMethodInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInsts = new List<AssertiveInstruction>(3);
             {
                 var smtInst = new CallMethodAssertion();
-                var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+                var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
                 smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
                 smtInsts.Add(smtInst);
             }
             return smtInsts;
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedSequenceLengthInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedSequenceLengthInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInsts = new List<AssertiveInstruction>(3);
             {
                 var smtInst = new SequenceLengthAssertion();
-                var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+                var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
                 smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
                 smtInsts.Add(smtInst);
             }
             return smtInsts;
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedLoadVariableInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedLoadVariableInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInsts = new List<AssertiveInstruction>(3);
             {
                 var smtInst = new LoadVariableAssertion();
-                var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+                var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
                 smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
                 smtInsts.Add(smtInst);
             }
             return smtInsts;
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedSequenceAtInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedSequenceAtInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInsts = new List<AssertiveInstruction>(3);
             {
                 var smtInst = new SequenceAtAssertion();
-                var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+                var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
                 smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
                 smtInsts.Add(smtInst);
             }
             return smtInsts;
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedConversionInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedConversionInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInsts = new List<AssertiveInstruction>(3);
             {
                 var smtInst = new ConversionAssertion();
-                var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+                var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
                 smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
                 smtInsts.Add(smtInst);
             }
             return smtInsts;
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedEqualsInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedEqualsInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new EqualsAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedGreaterThanInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedGreaterThanInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new GreaterThanAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedConstantInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedConstantInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInsts = new List<AssertiveInstruction>(3);
             {
                 var smtInst = new ConstantAssertion();
-                var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+                var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
                 smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
                 smtInsts.Add(smtInst);
             }
             return smtInsts;
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedNewObjectInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedNewObjectInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new NewObjectAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedIsInstanceInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedIsInstanceInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new IsInstanceAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedInitializeObjectInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedInitializeObjectInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new InitializeObjectAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedThrowInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedThrowInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new ThrowAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedStoreVariableInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedStoreVariableInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new StoreVariableAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedLoadFieldInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedLoadFieldInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new LoadFieldAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedStoreFieldInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedStoreFieldInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new StoreFieldAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }
 
-        static IReadOnlyList<AssertiveInstruction> NewUnlinkedReturnInstances(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static IReadOnlyList<AssertiveInstruction> NewUnlinkedReturnInstances(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInst = new ReturnAssertion();
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.Normal, exGrp, predecessor);
             smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind));
             return new[] { smtInst };
         }

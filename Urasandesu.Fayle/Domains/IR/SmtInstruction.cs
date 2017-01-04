@@ -48,13 +48,16 @@ namespace Urasandesu.Fayle.Domains.IR
         public EquatableSsaForm SsaForm { get; set; }
         public virtual bool IsBranchable { get { return false; } }
 
-        public SsaInstructionTypes Type { get { return Id.Type; } }
+        public InstructionTypes Type { get { return Id.Type; } }
         public bool IsAssertion { get { return Id.IsAssertion; } }
         public bool IsDeclaration { get { return Id.IsDeclaration; } }
-        public SsaExceptionGroup ExceptionGroup { get { return Id.ExceptionGroup; } }
+        public ExceptionGroup ExceptionGroup { get { return Id.ExceptionGroup; } }
         public Index ExceptionSourceIndex { get { return Id.ExceptionSourceIndex; } }
         public SmtBlockId ParentBlockId { get { return Id.ParentBlockId; } }
         public Index ParentBlockIndex { get { return ParentBlockId.BlockIndex; } }
+        public bool IsExceptionSource { get { return Id.IsExceptionSource; } }
+        public SmtLibStringKind Kind { get { return Id.Kind; } }
+        public EquatableSsaBlock ExceptionSource { get { return Id.ExceptionSource; } }
 
 
 
@@ -168,7 +171,7 @@ namespace Urasandesu.Fayle.Domains.IR
 
 
         public static bool TryGetDeclarationIds(
-            EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor, out IReadOnlyList<SmtInstructionId> resultIds)
+            EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor, out IReadOnlyList<SmtInstructionId> resultIds)
         {
             var ids = new List<SmtInstructionId>();
             resultIds = ids;
@@ -185,7 +188,8 @@ namespace Urasandesu.Fayle.Domains.IR
                 ids.Add(NewParameterDeclarationId(eqPrsrvdMeth, eqSsaInst, exGrp, predecessor));
                 result = true;
             }
-            else if (eqSsaInst.IsLoadVariableInstruction)
+            else if (eqSsaInst.IsLoadVariableInstruction ||
+                     eqSsaInst.IsStoreVariableInstruction)
             {
                 ids.Add(NewVariableDeclarationId(eqPrsrvdMeth, eqSsaInst, exGrp, predecessor));
                 result = true;
@@ -215,26 +219,26 @@ namespace Urasandesu.Fayle.Domains.IR
             return result;
         }
 
-        static SmtInstructionId NewParameterDeclarationId(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static SmtInstructionId NewParameterDeclarationId(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var eqMethDef = eqPrsrvdMeth.Resolve();
             var eqParamDef = eqPrsrvdMeth.GetParameter(eqSsaInst);
-            var kind = new SmtLibStringKind(SsaInstructionTypes.PileParameter, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.PileParameter, exGrp, predecessor);
             return new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind), eqParamDef);
         }
 
-        static SmtInstructionId NewVariableDeclarationId(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static SmtInstructionId NewVariableDeclarationId(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var eqMethDef = eqPrsrvdMeth.Resolve();
             var eqVarDef = eqMethDef.GetVariable(eqSsaInst);
-            var kind = new SmtLibStringKind(SsaInstructionTypes.PileLocal, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.PileLocal, exGrp, predecessor);
             return new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind), eqVarDef);
         }
 
-        static SmtInstructionId NewFieldDeclarationId(EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static SmtInstructionId NewFieldDeclarationId(EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var eqFldRef = new EquatableFieldReference((FieldReference)eqSsaInst.Instruction.Operand);
-            var kind = new SmtLibStringKind(SsaInstructionTypes.PileField, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.PileField, exGrp, predecessor);
             return new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind), eqFldRef);
         }
 
@@ -265,11 +269,11 @@ namespace Urasandesu.Fayle.Domains.IR
             return eqSsaInst.Target != null && eqSsaInst.Target.IsStackLocation;
         }
 
-        static SmtInstructionId NewStackDeclarationId(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        static SmtInstructionId NewStackDeclarationId(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var eqMethDef = eqPrsrvdMeth.Resolve();
             var eqSsaVar = eqSsaInst.Target;
-            var kind = new SmtLibStringKind(SsaInstructionTypes.PileStack, exGrp, predecessor);
+            var kind = new SmtLibStringKind(InstructionTypes.PileStack, exGrp, predecessor);
             return new SmtInstructionId(new SmtLibStringAttribute(eqSsaInst, kind), eqSsaVar);
         }
 
@@ -278,6 +282,11 @@ namespace Urasandesu.Fayle.Domains.IR
         protected string GetNewThisName()
         {
             return "this" + Id.Instruction.Instruction.Offset;
+        }
+
+        protected string GetNewTentativeName()
+        {
+            return "tent" + Id.Instruction.Instruction.Offset;
         }
     }
 }

@@ -38,27 +38,30 @@ namespace Urasandesu.Fayle.Domains.SmtLib
 {
     public struct SmtLibStringKind : IValueObject, IEquatable<SmtLibStringKind>, IComparable<SmtLibStringKind>
     {
-        public SmtLibStringKind(SsaInstructionTypes type, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        public SmtLibStringKind(InstructionTypes type, ExceptionGroup exGrp, EquatableSsaBlock exSrc)
             : this()
         {
             Type = type;
             ExceptionGroup = exGrp;
-            ExceptionSource = predecessor;
-            ExceptionSourceIndex = predecessor == null ? Index.InvalidValue : predecessor.BlockIndex;
+            ExceptionSource = exSrc;
+            ExceptionSourceIndex = exSrc.Maybe(o => o.BlockIndex, Index.InvalidValue);
         }
 
-        public SsaInstructionTypes Type { get; private set; }
-        public SsaExceptionGroup ExceptionGroup { get; private set; }
+        public static readonly SmtLibStringKind Normal = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.NotApplicable, null);
+        public static readonly SmtLibStringKind Branch = new SmtLibStringKind(InstructionTypes.Branch, ExceptionGroup.NotApplicable, null);
+
+        public InstructionTypes Type { get; private set; }
+        public ExceptionGroup ExceptionGroup { get; private set; }
         public EquatableSsaBlock ExceptionSource { get; private set; }
         public Index ExceptionSourceIndex { get; private set; }
-        public bool IsExceptionSource { get { return ExceptionSource != null; } }
+        public bool IsExceptionThrowable { get { return ExceptionSource != null; } }
 
         public bool IsAssertion
         {
             get
             {
-                return Type == SsaInstructionTypes.Normal ||
-                       Type == SsaInstructionTypes.Branch;
+                return Type == InstructionTypes.Normal ||
+                       Type == InstructionTypes.Branch;
             }
         }
 
@@ -66,10 +69,10 @@ namespace Urasandesu.Fayle.Domains.SmtLib
         {
             get
             {
-                return Type == SsaInstructionTypes.PileParameter ||
-                       Type == SsaInstructionTypes.PileLocal ||
-                       Type == SsaInstructionTypes.PileField ||
-                       Type == SsaInstructionTypes.PileStack;
+                return Type == InstructionTypes.PileParameter ||
+                       Type == InstructionTypes.PileLocal ||
+                       Type == InstructionTypes.PileField ||
+                       Type == InstructionTypes.PileStack;
             }
         }
 

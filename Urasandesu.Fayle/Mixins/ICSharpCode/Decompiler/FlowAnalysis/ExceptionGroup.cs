@@ -1,5 +1,5 @@
 ﻿/* 
- * File: SsaExceptionGroup.cs
+ * File: ExceptionGroup.cs
  * 
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
@@ -34,19 +34,19 @@ using Urasandesu.Fayle.Infrastructures;
 
 namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 {
-    public struct SsaExceptionGroup : IValueObject, IEquatable<SsaExceptionGroup>, IComparable<SsaExceptionGroup>
+    public struct ExceptionGroup : IValueObject, IEquatable<ExceptionGroup>, IComparable<ExceptionGroup>
     {
-        public static readonly SsaExceptionGroup NotApplicable = new SsaExceptionGroup((int)SsaExceptionGroupTypes.NotApplicable);
-        public static readonly SsaExceptionGroup AllNormal = new SsaExceptionGroup((int)SsaExceptionGroupTypes.AllNormal);
-        public static SsaExceptionGroup SomethingBranch(int value)
+        public static readonly ExceptionGroup NotApplicable = new ExceptionGroup((int)ExceptionGroupTypes.NotApplicable);
+        public static readonly ExceptionGroup AllNormal = new ExceptionGroup((int)ExceptionGroupTypes.AllNormal);
+        public static ExceptionGroup SomethingBranch(int value)
         {
             if (value <1)
                 throw new ArgumentOutOfRangeException("value", value, "The parameter must be equal or larger than 1.");
 
-            return new SsaExceptionGroup(value);
+            return new ExceptionGroup(value);
         }
 
-        public SsaExceptionGroup(int value)
+        public ExceptionGroup(int value)
             : this()
         {
             if (value < -1)
@@ -54,14 +54,14 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 
             Type =
                 value == -1 ?
-                    SsaExceptionGroupTypes.NotApplicable :
+                    ExceptionGroupTypes.NotApplicable :
                     value == 0 ?
-                        SsaExceptionGroupTypes.AllNormal :
-                        SsaExceptionGroupTypes.SomethingBranch;
+                        ExceptionGroupTypes.AllNormal :
+                        ExceptionGroupTypes.SomethingBranch;
             Value = value;
         }
 
-        public SsaExceptionGroupTypes Type { get; private set; }
+        public ExceptionGroupTypes Type { get; private set; }
         public int Value { get; private set; }
 
         public override int GetHashCode()
@@ -71,24 +71,24 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 
         public override bool Equals(object obj)
         {
-            var other = default(SsaExceptionGroup?);
-            if ((other = obj as SsaExceptionGroup?) == null)
+            var other = default(ExceptionGroup?);
+            if ((other = obj as ExceptionGroup?) == null)
                 return false;
 
-            return ((IEquatable<SsaExceptionGroup>)this).Equals(other.Value);
+            return ((IEquatable<ExceptionGroup>)this).Equals(other.Value);
         }
 
-        public bool Equals(SsaExceptionGroup other)
+        public bool Equals(ExceptionGroup other)
         {
             return Value == other.Value;
         }
 
-        public static bool operator ==(SsaExceptionGroup lhs, SsaExceptionGroup rhs)
+        public static bool operator ==(ExceptionGroup lhs, ExceptionGroup rhs)
         {
             return lhs.Equals(rhs);
         }
 
-        public static bool operator !=(SsaExceptionGroup lhs, SsaExceptionGroup rhs)
+        public static bool operator !=(ExceptionGroup lhs, ExceptionGroup rhs)
         {
             return !(lhs == rhs);
         }
@@ -97,10 +97,10 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
         {
             switch (Type)
             {
-                case SsaExceptionGroupTypes.NotApplicable:
-                case SsaExceptionGroupTypes.AllNormal:
+                case ExceptionGroupTypes.NotApplicable:
+                case ExceptionGroupTypes.AllNormal:
                     return Type.ToString();
-                case SsaExceptionGroupTypes.SomethingBranch:
+                case ExceptionGroupTypes.SomethingBranch:
                     return string.Format("({0}:{1})", Type, Value);
                 default:
                     var msg = string.Format("The Type '{0}' is not supported.", Type);
@@ -108,7 +108,7 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             }
         }
 
-        public int CompareTo(SsaExceptionGroup other)
+        public int CompareTo(ExceptionGroup other)
         {
             return Value.CompareTo(other.Value);
         }

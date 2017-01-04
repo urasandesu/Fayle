@@ -38,7 +38,7 @@ namespace Urasandesu.Fayle.Mixins.System.Collections.Generic
     {
         public static IEqualityComparer<T> Make()
         {
-            return Make(_ => _, (_1, _2) => _1.Equals(_2), _ => _.GetHashCode());
+            return Make(_ => _, (_1, _2) => object.Equals(_1, _2), _ => ObjectMixin.GetHashCode(_));
         }
 
         public static IEqualityComparer<T> Make<TProp>(Func<T, TProp> selector, Func<TProp, TProp, bool> equals, Func<TProp, int> getHashCode)

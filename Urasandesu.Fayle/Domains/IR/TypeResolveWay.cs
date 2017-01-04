@@ -34,7 +34,7 @@ using Urasandesu.Fayle.Infrastructures;
 
 namespace Urasandesu.Fayle.Domains.IR
 {
-    public class TypeResolveWay : Entity<TypeResolveWay>, IDisposable
+    public class TypeResolveWay : SelfIdentifiedEntity<TypeResolveWay>, IDisposable
     {
         bool m_disposed;
 

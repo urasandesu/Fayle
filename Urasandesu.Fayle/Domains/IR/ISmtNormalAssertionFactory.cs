@@ -38,7 +38,7 @@ namespace Urasandesu.Fayle.Domains.IR
 {
     public interface ISmtNormalAssertionFactory
     {
-        IEnumerable<AssertiveInstruction> NewUnlinkedNoneInstances(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor);
+        IEnumerable<AssertiveInstruction> NewUnlinkedNoneInstances(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor);
     }
 }
 

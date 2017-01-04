@@ -33,5 +33,27 @@ namespace Urasandesu.Fayle.Domains.SmtLib.Sentences
 {
     public class ClassSentence : TypeDefinitionSentence
     {
+        public override SmtLibStringPart GetEqualNullInvocation(SmtLibStringContext ctx, string target)
+        {
+            return new SmtLibStringPart("(= {0} {1})",
+                                        ctx.AppendSuffixOfCurrentInvocation(target),
+                                        GetNullInvocation());
+        }
+
+        public override SmtLibStringPart GetNotEqualNullInvocation(SmtLibStringContext ctx, string target)
+        {
+            return new SmtLibStringPart("(not {0})",
+                                        GetEqualNullInvocation(ctx, target));
+        }
+
+
+
+        public override object InvokeMember(string constantName, string name, params object[] args)
+        {
+            if (SmtLibKeywords.Equals(NullConstructor.ToString(), name))
+                return NewNullDotNetObject(constantName);
+
+            return base.InvokeMember(constantName, name, args);
+        }
     }
 }

@@ -30,8 +30,8 @@
 
 
 using ICSharpCode.Decompiler.FlowAnalysis;
-using Mono.Collections.Generic;
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Urasandesu.Fayle.Infrastructures;
 using Urasandesu.Fayle.Mixins.Mono.Cecil;
@@ -85,6 +85,17 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             }
         }
 
+        ReadOnlyCollection<EquatableSsaBlock> m_successors;
+        public ReadOnlyCollection<EquatableSsaBlock> Successors
+        {
+            get
+            {
+                if (m_successors == null)
+                    m_successors = new ReadOnlyCollection<EquatableSsaBlock>(Source.Successors.Select(_ => new EquatableSsaBlock(_, Method)).ToArray());
+                return m_successors;
+            }
+        }
+
         ReadOnlyCollection<EquatableSsaInstruction> m_insts;
         public ReadOnlyCollection<EquatableSsaInstruction> Instructions
         {
@@ -96,7 +107,46 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             }
         }
 
+        bool m_firstInstInit;
+        EquatableSsaInstruction m_firstInst;
+        public EquatableSsaInstruction FirstInstruction
+        {
+            get
+            {
+                if (!m_firstInstInit)
+                {
+                    m_firstInst = Instructions.FirstOrDefault();
+                    m_firstInstInit = true;
+                }
+                return m_firstInst;
+            }
+        }
+
+        bool m_lastInstInit;
+        EquatableSsaInstruction m_lastInst;
+        public EquatableSsaInstruction LastInstruction
+        {
+            get
+            {
+                if (!m_lastInstInit)
+                {
+                    m_lastInst = Instructions.LastOrDefault();
+                    m_lastInstInit = true;
+                }
+                return m_lastInst;
+            }
+        }
+
         public ControlFlowNodeType NodeType { get { return Source.NodeType; } }
+        public bool IsTerminalNode
+        {
+            get
+            {
+                return NodeType == ControlFlowNodeType.EntryPoint || 
+                       NodeType == ControlFlowNodeType.RegularExit || 
+                       NodeType == ControlFlowNodeType.ExceptionalExit;
+            }
+        }
         public EquatableMethodDefinition Method { get; private set; }
 
         public override int GetHashCode()
@@ -174,6 +224,28 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
         public void Validate()
         {
             // nop, because the validity of this instance is determined when constructing it.
+        }
+
+        bool? m_hasBranchInst;
+        public bool HasBranchInstruction
+        {
+            get
+            {
+                if (!m_hasBranchInst.HasValue)
+                {
+                    var last = Instructions.LastOrDefault();
+                    m_hasBranchInst = last == null ? false : last.IsBranchInstruction;
+                }
+                return m_hasBranchInst.Value;
+            }
+        }
+
+        public bool HasBranchTargetOf(EquatableSsaBlock block)
+        {
+            if (block == null)
+                return false;
+
+            return block.LastInstruction.Maybe(o => o.IsBranchTargetOf(FirstInstruction));
         }
     }
 }

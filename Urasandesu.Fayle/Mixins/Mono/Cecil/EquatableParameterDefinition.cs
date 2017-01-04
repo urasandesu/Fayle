@@ -33,6 +33,7 @@ using Mono.Cecil;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
 {
@@ -95,9 +96,9 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
         {
             var hashCode = 0;
             hashCode ^= Index.GetHashCode();
-            hashCode ^= ParameterType != null ? ParameterType.GetHashCode() : 0;
-            hashCode ^= Name != null ? Name.GetHashCode() : 0;
-            hashCode ^= Method != null ? Method.GetHashCode() : 0;
+            hashCode ^= ObjectMixin.GetHashCode(ParameterType);
+            hashCode ^= ObjectMixin.GetHashCode(Name);
+            hashCode ^= ObjectMixin.GetHashCode(Method);
             return hashCode;
         }
 

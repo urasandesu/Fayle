@@ -37,7 +37,7 @@ using Urasandesu.Fayle.Mixins.Urasandesu.Fayle.Infrastructures;
 
 namespace Urasandesu.Fayle.Infrastructures
 {
-    public abstract class EquatableIdEntity<TId, TSurrogateKey> : Entity<TId>, IEquatableIdEntity<TId, TSurrogateKey>
+    public abstract class EquatableIdEntity<TId, TSurrogateKey> : EntityBase<TId>, IEquatableIdEntity<TId, TSurrogateKey>
         where TId : IEquatable<TId>, IComparable<TId>, IIdentityValidator
         where TSurrogateKey : IEquatable<TSurrogateKey>, IComparable<TSurrogateKey>, IIdentityValidator
     {

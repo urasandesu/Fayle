@@ -155,6 +155,11 @@ namespace Urasandesu.Fayle.Domains.SmtLib
             throw new NotImplementedException(string.Format("at {0}", GetType()));
         }
 
+        public virtual SmtLibStringPart GetLessThanInvocation(SmtLibStringContext ctx, string target, string operand)
+        {
+            throw new NotImplementedException(string.Format("at {0}", GetType()));
+        }
+
         public virtual SmtLibStringPart GetLessOrEqualInvocation(SmtLibStringContext ctx, string target, string operand)
         {
             throw new NotImplementedException(string.Format("at {0}", GetType()));

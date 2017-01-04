@@ -32,7 +32,7 @@
 using Mono.Cecil;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
-{                
+{
     public class EquatableGenericInstanceMethod : EquatableMethodSpecification
     {
         public EquatableGenericInstanceMethod()

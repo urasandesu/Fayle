@@ -34,6 +34,7 @@ using System.Collections;
 using System.Text;
 using Urasandesu.Fayle.Infrastructures;
 using Urasandesu.Fayle.Mixins.Mono.Cecil;
+using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 {
@@ -62,7 +63,7 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
                 return 0;
 
             var hashCode = 0;
-            hashCode ^= TargetMethod != null ? TargetMethod.GetHashCode() : 0;
+            hashCode ^= ObjectMixin.GetHashCode(TargetMethod);
             hashCode ^= TargetMethodId.GetHashCode();
             hashCode ^= CallOrder.GetHashCode();
             return hashCode;

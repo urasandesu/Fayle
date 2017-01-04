@@ -85,30 +85,30 @@ namespace Urasandesu.Fayle.Domains.SmtLib
             if (!ctxscs.Any())
                 yield break;
 
-            var newgrpsss = new List<Tuple<SsaInstructionGroup, List<SmtLibString>>>();
+            var newgrpsss = new List<Tuple<InstructionGroup, InstructionGroupedShortestPath, List<SmtLibString>>>();
             foreach (var ctxsc in ctxscs)
             {
-                newgrpsss.Add(Tuple.Create(ctxsc.Id, new List<SmtLibString>()));
+                newgrpsss.Add(Tuple.Create(ctxsc.Id, ctxsc.Path, new List<SmtLibString>()));
                 var newgrpss = newgrpsss[newgrpsss.Count - 1];
 
                 var paramGlues = default(List<SmtLibString>);
                 foreach (var ctxs in ctxsc)
                 {
-                    if (ctxs.TryAddAsDeclarationTo(newgrpss.Item2, Attribute, InvocationSite, ctx))
+                    if (ctxs.TryAddAsDeclarationTo(newgrpss.Item3, Attribute, InvocationSite, ctx))
                         continue;
 
                     if (paramGlues == null && ParameterTypesWithThis.Any())
                     {
                         paramGlues = ParameterTypesWithThis.Select((_, i) => GetParameterGlue(ctx, i)).ToList();
-                        newgrpss.Item2.AddRange(paramGlues);
+                        newgrpss.Item3.AddRange(paramGlues);
                     }
 
-                    ctxs.TryAddTo(newgrpss.Item2, Attribute, InvocationSite, ctx);
+                    ctxs.TryAddTo(newgrpss.Item3, Attribute, InvocationSite, ctx);
                 }
             }
 
             foreach (var newgrpss in newgrpsss)
-                yield return new SmtLibStringCollection(newgrpss.Item2) { Id = newgrpss.Item1 };
+                yield return new SmtLibStringCollection(newgrpss.Item2, newgrpss.Item3) { Id = newgrpss.Item1 };
         }
 
         SmtLibString GetParameterGlue(SmtLibStringContext ctx, int seq)

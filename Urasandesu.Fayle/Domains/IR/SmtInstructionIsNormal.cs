@@ -50,8 +50,8 @@ namespace Urasandesu.Fayle.Domains.IR
                 return false;
 
             return obj.ParentBlockId == m_parentBlockId && 
-                   obj.Type == SsaInstructionTypes.Normal && 
-                   obj.ExceptionGroup == SsaExceptionGroup.NotApplicable && 
+                   obj.Type == InstructionTypes.Normal && 
+                   obj.ExceptionGroup == ExceptionGroup.NotApplicable && 
                    obj.ExceptionSourceIndex == Index.InvalidValue;
         }
 

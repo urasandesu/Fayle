@@ -37,7 +37,7 @@ using Urasandesu.Fayle.Mixins.System;
 using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
-{                
+{
     public class EquatableMemberReference : IValueObject, IEquatable<EquatableMemberReference>, IComparable<EquatableMemberReference>, IIdentityValidator, ICastable<MemberReference>
     {
         public EquatableMemberReference()

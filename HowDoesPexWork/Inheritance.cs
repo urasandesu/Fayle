@@ -37,12 +37,12 @@ namespace HowDoesPexWork
     {
         public static void Puzzle(object v)
         {
-            var hoge = v as Hoge;
+            var hoge = v as InheritanceHoge;
             if (hoge != null)
                 throw new Exception("hoge!");
         }
-
-        class Hoge { }
     }
+
+    public class InheritanceHoge { }
 }
 

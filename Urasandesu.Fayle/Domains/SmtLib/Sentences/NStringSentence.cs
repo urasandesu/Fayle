@@ -56,5 +56,15 @@ namespace Urasandesu.Fayle.Domains.SmtLib.Sentences
                                         GetFirstAccessorInvocation(ctx, target),
                                         constant);
         }
+
+
+
+        public override object InvokeMember(string constantName, string name, params object[] args)
+        {
+            if (SmtLibKeywords.Equals(NullConstructor.ToString(), name))
+                return NewNullDotNetObject(constantName);
+
+            return base.InvokeMember(constantName, name, args);
+        }
     }
 }

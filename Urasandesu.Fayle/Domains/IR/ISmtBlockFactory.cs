@@ -36,6 +36,7 @@ namespace Urasandesu.Fayle.Domains.IR
     public interface ISmtBlockFactory
     {
         SmtBlock NewInstance(SmtForm smtForm, EquatableSsaBlock eqSsaBlock, SmtInstruction smtInst);
+        SmtBlock NewNormalInstance(SmtForm smtForm, EquatableSsaBlock eqSsaBlock);
     }
 }
 

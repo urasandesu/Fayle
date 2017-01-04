@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Urasandesu.Fayle</RootNamespace>
     <AssemblyName>Urasandesu.Fayle</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -91,17 +91,21 @@
   <ItemGroup>
     <Compile Include="Domains\IR\Instructions\AddAssertion.cs" />
     <Compile Include="Domains\IR\Instructions\IsInstanceAssertion.cs" />
+    <Compile Include="Domains\IR\SmtBlockIsSuccessor.cs" />
     <Compile Include="Domains\SmtLib\DotNetObjectPointsToAnother.cs" />
     <Compile Include="Domains\SmtLib\DotNetObjectIsGeneratedBySpecified.cs" />
     <Compile Include="Domains\SmtLib\Sentences\DoubleSentence.cs" />
     <Compile Include="Domains\SmtLib\Sentences\ObjectSentence.cs" />
     <Compile Include="Domains\SmtLib\Sentences\RealSentence.cs" />
     <Compile Include="Domains\SmtLib\Symbols\RealSymbol.cs" />
+    <Compile Include="Infrastructures\SelfIdentifiedEntity`1.cs" />
+    <Compile Include="Infrastructures\Entity`1.cs" />
     <Compile Include="Infrastructures\EntityTable`2.cs" />
     <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\AssignmentRelationIsParent.cs" />
     <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\AssignmentRelationIsLatest.cs" />
     <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\AssignmentRelation.cs" />
     <Compile Include="Domains\IR\Instructions\FieldDeclaration.cs" />
+    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\InstructionGroupedShortestPath.cs" />
     <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\VariableAssignment.cs" />
     <Compile Include="Domains\IR\Instructions\StoreFieldAssertion.cs" />
     <Compile Include="Domains\IR\Instructions\LoadFieldAssertion.cs" />
@@ -117,8 +121,8 @@
     <Compile Include="Domains\SmtLib\SmtLibStringAttribute.cs" />
     <Compile Include="Domains\SmtLib\ResultString.cs" />
     <Compile Include="Domains\SmtLib\UnevaluableSmtLibString.cs" />
-    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\SsaExceptionGroup.cs" />
-    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\SsaExceptionGroupTypes.cs" />
+    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\ExceptionGroup.cs" />
+    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\ExceptionGroupTypes.cs" />
     <Compile Include="Domains\IR\Instructions\InitializeObjectAssertion.cs" />
     <Compile Include="Domains\Services\IResolvingUnknownMethodService.cs" />
     <Compile Include="Domains\Services\IResolvingUnknownTypeService.cs" />
@@ -260,11 +264,15 @@
     <Compile Include="FayAgency.cs" />
     <Compile Include="Infrastructures\FayleEventSource.cs" />
     <Compile Include="Mixins\Microsoft\Z3\InterpretedConstant.cs" />
+    <Compile Include="Mixins\Mono\Cecil\Cil\SequencePointMixin.cs" />
+    <Compile Include="Mixins\Mono\Cecil\Cil\EquatableSequencePoint.cs" />
+    <Compile Include="Mixins\Mono\Cecil\Cil\EquatableMethodBody.cs" />
+    <Compile Include="Mixins\Mono\Cecil\Cil\DocumentMixin.cs" />
     <Compile Include="Mixins\System\ICastable`1.cs" />
     <Compile Include="Infrastructures\AndSpecification`2.cs" />
     <Compile Include="Mixins\System\Collections\Generic\ObjectEqualityComparer`1.cs" />
     <Compile Include="Mixins\System\Collections\Generic\EquatableComparer`1.cs" />
-    <Compile Include="Infrastructures\Entity`1.cs" />
+    <Compile Include="Infrastructures\EntityBase`1.cs" />
     <Compile Include="Mixins\System\Collections\Generic\BaseEqualityComparer`1.cs" />
     <Compile Include="Infrastructures\IEntity`1.cs" />
     <Compile Include="Infrastructures\NumericKeyedEntity`1.cs" />
@@ -274,6 +282,7 @@
     <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\EquatableSsaBlock.cs" />
     <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\EquatableSsaForm.cs" />
     <Compile Include="Mixins\System\Disposable`1.cs" />
+    <Compile Include="Mixins\System\ObjectMixin.cs" />
     <Compile Include="Mixins\System\IDisposableMixin.cs" />
     <Compile Include="Mixins\System\StringMixin.cs" />
     <Compile Include="TypeResolveWayConfirmResult.cs" />
@@ -318,7 +327,7 @@
     <Compile Include="Mixins\System\Linq\EnumerableMixin.cs" />
     <Compile Include="Mixins\System\ICastableMixin.cs" />
     <Compile Include="Mixins\Urasandesu\Fayle\Infrastructures\ISpecificationMixin.cs" />
-    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\SsaInstructionGroup.cs" />
+    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\InstructionGroup.cs" />
     <Compile Include="Infrastructures\NumericKeyedRepositoryInMemory`2.cs" />
     <Compile Include="Infrastructures\INumericKeyedRepository`2.cs" />
     <Compile Include="Infrastructures\IRepository`3.cs" />
@@ -353,7 +362,7 @@
     <Compile Include="Domains\IR\SmtInstruction.cs" />
     <Compile Include="Domains\IR\SmtInstructionId.cs" />
     <Compile Include="Domains\SmtLib\SmtLibStringKind.cs" />
-    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\SsaInstructionTypes.cs" />
+    <Compile Include="Mixins\ICSharpCode\Decompiler\FlowAnalysis\InstructionTypes.cs" />
     <Compile Include="Repositories\SmtInstructionRepositoryInMemory.cs" />
     <Compile Include="Domains\IR\ISmtInstructionRepository.cs" />
     <Compile Include="Domains\IR\SmtInstructionFactory.cs" />

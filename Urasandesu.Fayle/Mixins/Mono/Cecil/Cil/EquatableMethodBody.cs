@@ -1,5 +1,5 @@
 ﻿/* 
- * File: EquatableInstruction.cs
+ * File: EquatableMethodBody.cs
  * 
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
@@ -31,26 +31,37 @@
 
 using Mono.Cecil.Cil;
 using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Urasandesu.Fayle.Infrastructures;
+using Urasandesu.Fayle.Mixins.System;
+using Urasandesu.Fayle.Mixins.System.Linq;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
 {
-    public class EquatableInstruction : IValueObject, IEquatable<EquatableInstruction>, IComparable<EquatableInstruction>, IIdentityValidator
+    public class EquatableMethodBody : IValueObject, IEquatable<EquatableMethodBody>, IComparable<EquatableMethodBody>, IIdentityValidator
     {
-        public EquatableInstruction(Instruction source, EquatableMethodDefinition method)
+        public EquatableMethodBody(MethodBody source)
         {
             if (source == null)
                 throw new ArgumentNullException("source");
 
-            if (method == null)
-                throw new ArgumentNullException("method");
+            Source = source;
+            Method = source.Method == null ? null : new EquatableMethodDefinition(source.Method);
+        }
+
+        public EquatableMethodBody(MethodBody source, EquatableMethodDefinition method)
+        {
+            if (source == null)
+                throw new ArgumentNullException("source");
 
             Source = source;
             Method = method;
         }
 
-        Instruction m_source;
-        public Instruction Source
+
+        MethodBody m_source;
+        public MethodBody Source
         {
             get
             {
@@ -72,21 +83,21 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
         public override int GetHashCode()
         {
             var hashCode = 0;
-            hashCode ^= InstructionMixin.GetDeclarationHashCode(Source);
-            hashCode ^= Method.GetHashCode();
+            hashCode ^= MethodBodyMixin.GetDeclarationHashCode(Source);
+            hashCode ^= ObjectMixin.GetHashCode(Method);
             return hashCode;
         }
 
         public override bool Equals(object obj)
         {
-            var other = default(EquatableInstruction);
-            if ((other = obj as EquatableInstruction) == null)
+            var other = default(EquatableMethodBody);
+            if ((other = obj as EquatableMethodBody) == null)
                 return false;
 
-            return InstructionMixin.AreSameDeclaration(Source, other.Source);
+            return MethodBodyMixin.AreSameDeclaration(Source, other.Source);
         }
 
-        public bool Equals(EquatableInstruction other)
+        public bool Equals(EquatableMethodBody other)
         {
             if ((object)other == null)
                 return false;
@@ -94,7 +105,7 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
             if (!IsValid)
                 return !other.IsValid;
 
-            if (!InstructionMixin.AreSameDeclaration(Source, other.Source))
+            if (!MethodBodyMixin.AreSameDeclaration(Source, other.Source))
                 return false;
 
             if (Method != other.Method)
@@ -103,7 +114,7 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
             return true;
         }
 
-        public static bool operator ==(EquatableInstruction lhs, EquatableInstruction rhs)
+        public static bool operator ==(EquatableMethodBody lhs, EquatableMethodBody rhs)
         {
             if ((object)lhs != null)
                 return lhs.Equals(rhs);
@@ -113,12 +124,12 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
                 return true;
         }
 
-        public static bool operator !=(EquatableInstruction lhs, EquatableInstruction rhs)
+        public static bool operator !=(EquatableMethodBody lhs, EquatableMethodBody rhs)
         {
             return !(lhs == rhs);
         }
 
-        public int CompareTo(EquatableInstruction other)
+        public int CompareTo(EquatableMethodBody other)
         {
             if ((object)other == null)
                 return -1;
@@ -127,10 +138,10 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
                 return !other.IsValid ? 0 : -1;
 
             var result = 0;
-            if ((result = Method.CompareTo(other.Method)) != 0)
+            if ((result = MethodBodyMixin.CompareByDeclaration(Source, other.Source)) != 0)
                 return result;
 
-            if ((result = InstructionMixin.CompareByDeclaration(Source, other.Source)) != 0)
+            if ((result = EquatableMemberReference.DefaultComparer.Compare(Method, other.Method)) != 0)
                 return result;
 
             return result;
@@ -143,53 +154,23 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
             // nop, because the validity of this instance is determined when constructing it.
         }
 
-        public OpCode OpCode { get { return Source.OpCode; } }
-        public object Operand { get { return Source.Operand; } }
-
-        public bool IsLoadParameterInstruction()
-        {
-            return Source.IsLoadParameterInstruction();
-        }
-
-        public bool IsLoadVariableInstruction()
-        {
-            return Source.IsLoadVariableInstruction();
-        }
-
-        public int Offset { get { return Source.Offset; } }
-
         public override string ToString()
         {
             return Source.ToString();
         }
 
-        public bool IsBranchTargetOf(EquatableInstruction inst)
-        {
-            if (inst == null)
-                return false;
+        public int CodeSize { get { return Source.CodeSize; } }
 
-            return inst.Operand == Source;
-        }
-
-        bool m_seqPtInit;
-        EquatableSequencePoint m_seqPt;
-        public EquatableSequencePoint SequencePoint
+        ReadOnlyCollection<EquatableInstruction> m_insts;
+        public ReadOnlyCollection<EquatableInstruction> Instructions
         {
             get
             {
-                if (!m_seqPtInit)
-                {
-                    for (var inst = Source; inst != null; inst = inst.Previous)
-                    {
-                        if (inst.SequencePoint != null)
-                        {
-                            m_seqPt = new EquatableSequencePoint(inst.SequencePoint);
-                            break;
-                        }
-                    }
-                    m_seqPtInit = true;
-                }
-                return m_seqPt;
+                if (m_insts == null)
+                    m_insts = Method == null ? 
+                        EnumerableMixin.EmptyReadOnlyCollection<EquatableInstruction>() : 
+                        new ReadOnlyCollection<EquatableInstruction>(Source.Instructions.Select(_ => new EquatableInstruction(_, Method)).ToList());
+                return m_insts;
             }
         }
     }

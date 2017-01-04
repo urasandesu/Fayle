@@ -35,6 +35,7 @@ using Mono.Cecil.Cil;
 using System;
 using Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis;
 using Urasandesu.Fayle.Mixins.Mono.Cecil.Cil;
+using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
 {
@@ -48,6 +49,21 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
         { }
 
         public new MethodDefinition Source { get { return (MethodDefinition)base.Source; } }
+
+        bool m_isBodyInit;
+        EquatableMethodBody m_body;
+        public EquatableMethodBody Body
+        {
+            get
+            {
+                if (!m_isBodyInit)
+                {
+                    m_body = Source.Body.Maybe(o => new EquatableMethodBody(o));
+                    m_isBodyInit = true;
+                }
+                return m_body;
+            }
+        }
 
         public override bool TrySetSourceWithCast(MethodReference source)
         {
@@ -128,7 +144,8 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
             if (inst.IsLoadParameterInstruction())
                 return GetParameter(inst);
 
-            if (inst.IsLoadVariableInstruction())
+            if (inst.IsLoadVariableInstruction() || 
+                inst.IsStoreVariableInstruction())
                 return GetVariable(inst);
 
             return null;

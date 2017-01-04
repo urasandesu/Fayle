@@ -32,7 +32,6 @@
 using System.Collections.Generic;
 using Urasandesu.Fayle.Domains.SmtLib;
 using Urasandesu.Fayle.Infrastructures;
-using Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis;
 
 namespace Urasandesu.Fayle.Domains.IR
 {
@@ -44,11 +43,13 @@ namespace Urasandesu.Fayle.Domains.IR
             : this()
         {
             m_predecessorIds = new HashSet<SmtBlockId>();
-            var predecessors = (blockId.ExceptionSource ?? blockId.Block).Predecessors;
-            var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.NotApplicable, null);
+            var predecessors = blockId.OriginalPredecessors;
             var parentFormId = blockId.ParentFormId;
             foreach (var predecessor in predecessors)
-                m_predecessorIds.Add(new SmtBlockId(parentFormId, predecessor, kind));
+            {
+                m_predecessorIds.Add(new SmtBlockId(parentFormId, predecessor, SmtLibStringKind.Normal));
+                m_predecessorIds.Add(new SmtBlockId(parentFormId, predecessor, SmtLibStringKind.Branch));
+            }
         }
 
         public bool IsSatisfiedBy(SmtBlock obj)

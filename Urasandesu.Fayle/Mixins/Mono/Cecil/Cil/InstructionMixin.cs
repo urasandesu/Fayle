@@ -192,7 +192,7 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
                    @this.OpCode == OpCodes.Ldloc_2 ||
                    @this.OpCode == OpCodes.Ldloc_3 ||
                    @this.OpCode == OpCodes.Ldloc_S ||
-                   @this.OpCode == OpCodes.Ldloca  ||
+                   @this.OpCode == OpCodes.Ldloca ||
                    @this.OpCode == OpCodes.Ldloca_S;
         }
 

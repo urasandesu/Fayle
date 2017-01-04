@@ -33,6 +33,7 @@ using System;
 using System.Web.Script.Serialization;
 using Urasandesu.Fayle.Domains.SmtLib;
 using Urasandesu.Fayle.Mixins.Mono.Cecil;
+using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle
 {
@@ -57,7 +58,7 @@ namespace Urasandesu.Fayle
 
         public override int GetHashCode()
         {
-            return Value != null ? Value.GetHashCode() : 0;
+            return ObjectMixin.GetHashCode(Value);
         }
 
         public override bool Equals(object obj)

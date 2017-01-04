@@ -30,6 +30,7 @@
 
 
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
+using System;
 using System.Diagnostics.Tracing;
 using Urasandesu.Fayle;
 using Urasandesu.Fayle.Infrastructures;
@@ -43,7 +44,7 @@ namespace Test.Urasandesu.Fayle
             var listener = ConsoleLog.CreateListener();
             listener.EnableEvents(FayleEventSource.Log, EventLevel.Verbose);
 
-            FayAgency.LoadConfigurationFrom("Test.Urasandesu.Fayle.dll.config");
+            FayAgency.LoadConfigurationFrom(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
         }
     }
 }

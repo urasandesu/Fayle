@@ -66,7 +66,7 @@ namespace Urasandesu.Fayle.Domains.IR
                 case ControlFlowNodeType.EntryPoint:
                 case ControlFlowNodeType.RegularExit:
                     foreach (var eqSsaInst in eqSsaBlock.Instructions)
-                        foreach (var smtInst in NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, eqSsaInst, SsaExceptionGroup.NotApplicable, null))
+                        foreach (var smtInst in NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, eqSsaInst, ExceptionGroup.NotApplicable, null))
                             yield return smtInst;
                     break;
                 case ControlFlowNodeType.ExceptionalExit:
@@ -79,7 +79,7 @@ namespace Urasandesu.Fayle.Domains.IR
             }
         }
 
-        IEnumerable<SmtInstruction> NewUnlinkedNormalInstances(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        IEnumerable<SmtInstruction> NewUnlinkedNormalInstances(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             foreach (var smtInst in m_smtDeclInstFactory.NewUnlinkedDeclarativeInstances(eqPrsrvdMeth, eqSsaForm, eqSsaInst, exGrp, predecessor))
                 yield return smtInst;
@@ -128,26 +128,26 @@ namespace Urasandesu.Fayle.Domains.IR
             else if (lastEqSsaInst.Instruction.OpCode == OpCodes.Callvirt)
             {
                 // TODO: MissingMethodException
-                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, SsaExceptionGroup.AllNormal, predecessor)));
+                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, ExceptionGroup.AllNormal, predecessor)));
                 {
                     var smtInst = new NotNullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.AllNormal, predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.AllNormal, predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
 
-                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, SsaExceptionGroup.SomethingBranch(1), predecessor)));
+                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, ExceptionGroup.SomethingBranch(1), predecessor)));
                 {
                     var smtInst = new NotNullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.SomethingBranch(1), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.SomethingBranch(1), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
                 {
                     var smtInst = new NullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Branch, SsaExceptionGroup.SomethingBranch(1), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Branch, ExceptionGroup.SomethingBranch(1), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
@@ -157,26 +157,26 @@ namespace Urasandesu.Fayle.Domains.IR
             }
             else if (lastEqSsaInst.Instruction.OpCode == OpCodes.Ldlen)
             {
-                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, SsaExceptionGroup.AllNormal, predecessor)));
+                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, ExceptionGroup.AllNormal, predecessor)));
                 {
                     var smtInst = new NotNullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.AllNormal, predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.AllNormal, predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
 
-                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, SsaExceptionGroup.SomethingBranch(1), predecessor)));
+                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, ExceptionGroup.SomethingBranch(1), predecessor)));
                 {
                     var smtInst = new NotNullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.SomethingBranch(1), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.SomethingBranch(1), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
                 {
                     var smtInst = new NullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Branch, SsaExceptionGroup.SomethingBranch(1), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Branch, ExceptionGroup.SomethingBranch(1), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
@@ -185,10 +185,10 @@ namespace Urasandesu.Fayle.Domains.IR
             }
             else if (lastEqSsaInst.Instruction.OpCode == OpCodes.Ldelem_I4)
             {
-                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, SsaExceptionGroup.AllNormal, predecessor)));
+                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, ExceptionGroup.AllNormal, predecessor)));
                 {
                     var smtInst = new NotNullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.AllNormal, predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.AllNormal, predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
@@ -196,39 +196,39 @@ namespace Urasandesu.Fayle.Domains.IR
                 // TODO: ArrayTypeMismatchException
                 {
                     var smtInst = new NotIndexMinusOutOfRangeAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.AllNormal, predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.AllNormal, predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
                 {
                     var smtInst = new NotIndexPlusOutOfRangeAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.AllNormal, predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.AllNormal, predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
 
-                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, SsaExceptionGroup.SomethingBranch(1), predecessor)));
+                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, ExceptionGroup.SomethingBranch(1), predecessor)));
                 {
                     var smtInst = new NotNullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.SomethingBranch(1), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.SomethingBranch(1), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
                 {
                     var smtInst = new NullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Branch, SsaExceptionGroup.SomethingBranch(1), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Branch, ExceptionGroup.SomethingBranch(1), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
 
-                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, SsaExceptionGroup.SomethingBranch(2), predecessor)));
+                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, ExceptionGroup.SomethingBranch(2), predecessor)));
                 {
                     var smtInst = new NotNullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.SomethingBranch(2), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.SomethingBranch(2), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
@@ -236,23 +236,23 @@ namespace Urasandesu.Fayle.Domains.IR
                 // TODO: ArrayTypeMismatchException
                 {
                     var smtInst = new NotIndexMinusOutOfRangeAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.SomethingBranch(2), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.SomethingBranch(2), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
                 {
                     var smtInst = new IndexMinusOutOfRangeAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Branch, SsaExceptionGroup.SomethingBranch(2), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Branch, ExceptionGroup.SomethingBranch(2), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
 
-                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, SsaExceptionGroup.SomethingBranch(3), predecessor)));
+                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, ExceptionGroup.SomethingBranch(3), predecessor)));
                 {
                     var smtInst = new NotNullReferenceAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.SomethingBranch(3), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.SomethingBranch(3), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
@@ -260,21 +260,21 @@ namespace Urasandesu.Fayle.Domains.IR
                 // TODO: ArrayTypeMismatchException
                 {
                     var smtInst = new NotIndexMinusOutOfRangeAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.SomethingBranch(3), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.SomethingBranch(3), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
                 {
                     var smtInst = new NotIndexPlusOutOfRangeAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Normal, SsaExceptionGroup.SomethingBranch(3), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Normal, ExceptionGroup.SomethingBranch(3), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
                 }
                 {
                     var smtInst = new IndexPlusOutOfRangeAssertion();
-                    var kind = new SmtLibStringKind(SsaInstructionTypes.Branch, SsaExceptionGroup.SomethingBranch(3), predecessor);
+                    var kind = new SmtLibStringKind(InstructionTypes.Branch, ExceptionGroup.SomethingBranch(3), predecessor);
                     smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
                     smtInst.Method = eqPrsrvdMeth;
                     smtInsts.Add(smtInst);
@@ -302,8 +302,15 @@ namespace Urasandesu.Fayle.Domains.IR
             }
             else if (lastEqSsaInst.Instruction.OpCode == OpCodes.Throw)
             {
-                // TODO: NullReferenceException
-                return new SmtInstruction[0];
+                smtInsts.AddRange(otherEqSsaInsts.SelectMany(ssaInst => NewUnlinkedNormalInstances(eqPrsrvdMeth, eqSsaForm, ssaInst, ExceptionGroup.AllNormal, predecessor)));
+                {
+                    var smtInst = new ThrowAssertion();
+                    var kind = new SmtLibStringKind(InstructionTypes.Branch, ExceptionGroup.AllNormal, predecessor);
+                    smtInst.Id = new SmtInstructionId(new SmtLibStringAttribute(lastEqSsaInst, kind), ++index);
+                    smtInst.Method = eqPrsrvdMeth;
+                    smtInsts.Add(smtInst);
+                }
+                return smtInsts;
             }
 
             var msg = string.Format("The OpCode '{0}' is not supported.", lastEqSsaInst.Instruction.OpCode);

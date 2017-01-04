@@ -37,7 +37,6 @@ namespace Urasandesu.Fayle.Domains.IR
         public TypeResolveWay NewInstance(ITypeResolveWayEventHandler[] additionalHandlers)
         {
             var typeRslvWay = new TypeResolveWay();
-            typeRslvWay.Id = typeRslvWay;
             typeRslvWay.AdditionalTypeHandlers = additionalHandlers;
             return typeRslvWay;
         }

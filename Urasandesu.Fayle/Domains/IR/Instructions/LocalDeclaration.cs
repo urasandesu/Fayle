@@ -54,6 +54,7 @@ namespace Urasandesu.Fayle.Domains.IR.Instructions
                 yield return new SmtLibString(depentDtSent.GetDatatypesDeclaration(), Id.StringAttribute);
             yield return new SmtLibString(dtSent.GetDatatypesDeclaration(), Id.StringAttribute);
             yield return new SmtLibString(dtSent.GetConstantDeclaration(ctx, eqVarDef.Name), Id.StringAttribute);
+            yield return new SmtLibString(dtSent.GetConstantDeclaration(ctx, GetNewTentativeName()), Id.StringAttribute);
         }
     }
 }

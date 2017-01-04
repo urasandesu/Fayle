@@ -36,6 +36,11 @@ namespace Urasandesu.Fayle.Mixins.System.Collections.Generic
 {
     public class EquatableComparer<T> : BaseEqualityComparer<T>  where T : IEquatable<T>
     {
+        public static new IEqualityComparer<T> Make()
+        {
+            return Make(_ => _, (_1, _2) => EqualityComparer<T>.Default.Equals(_1, _2), _ => ObjectMixin.GetHashCode(_));
+        }
+
         public static IEqualityComparer<T> Make<TProp>(Func<T, TProp> selector) where TProp : IEquatable<TProp>
         {
             return Make(selector, (_1, _2) => _1.Equals(_2), _ => _.GetHashCode());

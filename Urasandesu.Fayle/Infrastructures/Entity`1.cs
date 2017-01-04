@@ -4,7 +4,7 @@
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
  * 
- * Copyright (c) 2016 Akira Sugiura
+ * Copyright (c) 2017 Akira Sugiura
  *  
  *  This software is MIT License.
  *  
@@ -29,39 +29,21 @@
 
 
 
+using System.Diagnostics;
+using Urasandesu.Fayle.Mixins.Urasandesu.Fayle.Infrastructures;
+
 namespace Urasandesu.Fayle.Infrastructures
 {
-    public abstract class Entity<TId> : IEntity<TId>
+    public abstract class Entity<TId> : EntityBase<TId> where TId : IIdentityValidator
     {
-        public virtual TId Id { get; set; }
-
-        public override bool Equals(object obj)
+        public override TId Id
         {
-            var other = default(Entity<TId>);
-            if ((other = obj as Entity<TId>) == null)
-                return false;
-
-            return object.Equals(Id, other.Id);
-        }
-
-        public override int GetHashCode()
-        {
-            return Id != null ? Id.GetHashCode() : 0;
-        }
-
-        public static bool operator ==(Entity<TId> lhs, Entity<TId> rhs)
-        {
-            if ((object)lhs != null)
-                return lhs.Equals(rhs);
-            else if ((object)rhs != null)
-                return rhs.Equals(lhs);
-            else
-                return true;
-        }
-
-        public static bool operator !=(Entity<TId> lhs, Entity<TId> rhs)
-        {
-            return !(lhs == rhs);
+            get { return base.Id; }
+            set
+            {
+                Debug.Assert(base.Id == null || !base.Id.IsValidOnValidated(), "'Id' can only set when it is uninitialized.", "at {0}", GetType());
+                base.Id = value;
+            }
         }
     }
 }

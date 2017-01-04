@@ -28,6 +28,7 @@
  */
 
 
+using ICSharpCode.Decompiler.FlowAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,14 +53,23 @@ namespace Urasandesu.Fayle.Domains.IR
                 InstructionIsBranchPrecondition = new SmtInstructionIsBranchPrecondition(IdCore);
                 InstructionIsExceptionGuard = new SmtInstructionIsExceptionGuard(IdCore);
                 BlockIsPredecessor = new SmtBlockIsPredecessor(IdCore);
+                BlockIsSuccessor = new SmtBlockIsSuccessor(IdCore);
             }
         }
 
         public Index BlockIndex { get { return Id.BlockIndex; } }
         public EquatableSsaBlock Block { get { return Id.Block; } }
-        public bool IsAssertion { get { return Id.IsAssertion; } }
+        public bool HasAssertion { get { return Id.HasAssertion; } }
+        public bool HasDeclaration { get { return Id.HasDeclaration; } }
+        public bool IsExceptionThrowable { get { return Id.IsExceptionThrowable; } }
+        public bool IsBranchBlock { get { return Id.Kind.Type == InstructionTypes.Branch; } }
+
+        public ControlFlowNodeType NodeType { get { return Id.NodeType; } }
+
+        public bool HasBranchInstruction { get { return Id.HasBranchInstruction; } }
 
         public SmtBlock[] Predecessors { get; set; }
+        public SmtBlock[] Successors { get; set; }
 
         SmtInstruction[] m_sameParentBlockInstructions;
         public SmtInstruction[] SameParentBlockInstructions
@@ -76,6 +86,8 @@ namespace Urasandesu.Fayle.Domains.IR
                 if (m_sameParentBlockInstructions != null)
                     foreach (var inst in m_sameParentBlockInstructions)
                         SubscribeInstructionEvents(inst);
+
+                m_hasBranchableAssertion = null;
             }
         }
 
@@ -118,43 +130,23 @@ namespace Urasandesu.Fayle.Domains.IR
         public SmtInstruction[] BranchPreconditions { get; set; }
         public SmtInstruction[] ExceptionGuards { get; set; }
 
-        public IEnumerable<SmtInstruction> GetBlockInstructions()
+        bool? m_hasBranchableAssertion;
+        public bool HasBranchableLastAssertion
         {
-            foreach (var inst in GetDeclarations(new HashSet<DeclarationGroup>()))
-                yield return inst;
-
-            foreach (var inst in Predecessors.SelectMany(_ => _.GetPredecessorAssertions()))
-                yield return inst;
-
-            foreach (var inst in GetAllAssertions())
-                yield return inst;
+            get
+            {
+                if (!m_hasBranchableAssertion.HasValue)
+                {
+                    var lastInst = SameParentBlockAssertions.LastOrDefault();
+                    m_hasBranchableAssertion = lastInst != null && lastInst.IsBranchable;
+                }
+                return m_hasBranchableAssertion.Value;
+            }
         }
 
-        IEnumerable<SmtInstruction> GetDeclarations(HashSet<DeclarationGroup> keyHash)
+        public InstructionGroup GetGroup()
         {
-            var query = from inst in GetPredecessorDeclarations().Concat(Declarations)
-                        let grp = new DeclarationGroup(inst.Id.Type, inst.Id.ScopedObject)
-                        where keyHash.Add(grp)
-                        select inst;
-            return query;
-        }
-
-        IEnumerable<SmtInstruction> GetPredecessorDeclarations()
-        {
-            foreach (var inst in Predecessors.SelectMany(_ => _.GetPredecessorDeclarations()))
-                yield return inst;
-
-            foreach (var inst in Declarations)
-                yield return inst;
-        }
-
-        IEnumerable<SmtInstruction> GetPredecessorAssertions()
-        {
-            foreach (var inst in Predecessors.SelectMany(_ => _.GetPredecessorAssertions()))
-                yield return inst;
-
-            foreach (var inst in GetUnbranchedAssertions())
-                yield return inst;
+            return new InstructionGroup(Id.BlockIndex, Id.Kind.Type, Id.ExceptionGroup, Id.ExceptionSourceIndex);
         }
 
         public IEnumerable<SmtInstruction> GetAllAssertions()
@@ -162,9 +154,20 @@ namespace Urasandesu.Fayle.Domains.IR
             return BranchPreconditions.Take(BranchPreconditions.Length - 1).Concat(SameParentBlockAssertions);
         }
 
-        public IEnumerable<SmtInstruction> GetUnbranchedAssertions()
+        public IEnumerable<SmtInstruction> GetUnexceptionalAssertions()
         {
-            return ExceptionGuards.Concat(Normals);
+            return ExceptionGuards.Concat(GetAllAssertions());
+        }
+
+        public IEnumerable<SmtInstruction> GetAssertionsAccordingToTypicalBlock(SmtBlock typicalBlock)
+        {
+            if (!typicalBlock.IsExceptionThrowable)
+                return GetUnexceptionalAssertions();
+
+            if (typicalBlock == this)
+                return GetAllAssertions();
+
+            return GetUnexceptionalAssertions();
         }
 
         public SmtInstructionHasSameParentBlock InstructionHasSameParentBlock { get; private set; }
@@ -174,51 +177,11 @@ namespace Urasandesu.Fayle.Domains.IR
         public SmtInstructionIsBranchPrecondition InstructionIsBranchPrecondition { get; set; }
         public SmtInstructionIsExceptionGuard InstructionIsExceptionGuard { get; private set; }
         public SmtBlockIsPredecessor BlockIsPredecessor { get; private set; }
+        public SmtBlockIsSuccessor BlockIsSuccessor { get; private set; }
 
         public static readonly Index EntryPointIndex = new Index(0);
         public static readonly Index RegularExitIndex = new Index(1);
         public static readonly Index ExceptionalExitIndex = new Index(2);
-
-        struct DeclarationGroup : IEquatable<DeclarationGroup>
-        {
-            public DeclarationGroup(SsaInstructionTypes type, object scopedObj)
-                : this()
-            {
-                Type = type;
-                ScopedObject = scopedObj;
-            }
-
-            public SsaInstructionTypes Type { get; private set; }
-            public object ScopedObject { get; private set; }
-
-            public override int GetHashCode()
-            {
-                var hashCode = 0;
-                hashCode ^= Type.GetHashCode();
-                hashCode ^= ScopedObject != null ? ScopedObject.GetHashCode() : 0;
-                return hashCode;
-            }
-
-            public override bool Equals(object obj)
-            {
-                var other = default(DeclarationGroup?);
-                if ((other = obj as DeclarationGroup?) == null)
-                    return false;
-
-                return ((IEquatable<DeclarationGroup>)this).Equals(other.Value);
-            }
-
-            public bool Equals(DeclarationGroup other)
-            {
-                if (Type != other.Type)
-                    return false;
-
-                if (!object.Equals(ScopedObject, other.ScopedObject))
-                    return false;
-
-                return true;
-            }
-        }
     }
 }
 

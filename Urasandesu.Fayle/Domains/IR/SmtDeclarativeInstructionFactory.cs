@@ -39,7 +39,7 @@ namespace Urasandesu.Fayle.Domains.IR
 {
     public class SmtDeclarativeInstructionFactory : ISmtDeclarativeInstructionFactory
     {
-        public IEnumerable<DeclarativeInstruction> NewUnlinkedDeclarativeInstances(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, SsaExceptionGroup exGrp, EquatableSsaBlock predecessor)
+        public IEnumerable<DeclarativeInstruction> NewUnlinkedDeclarativeInstances(EquatablePreservedMethod eqPrsrvdMeth, EquatableSsaForm eqSsaForm, EquatableSsaInstruction eqSsaInst, ExceptionGroup exGrp, EquatableSsaBlock predecessor)
         {
             var smtInsts = new List<DeclarativeInstruction>(2);
             var ids = default(IReadOnlyList<SmtInstructionId>);
@@ -54,16 +54,16 @@ namespace Urasandesu.Fayle.Domains.IR
             var declInst = default(DeclarativeInstruction);
             switch (instId.Type)
             {
-                case SsaInstructionTypes.PileParameter:
+                case InstructionTypes.PileParameter:
                     declInst = NewUnlinkedParameterDeclarationInstance(instId);
                     break;
-                case SsaInstructionTypes.PileLocal:
+                case InstructionTypes.PileLocal:
                     declInst = NewUnlinkedLocalDeclarationInstance(instId);
                     break;
-                case SsaInstructionTypes.PileField:
+                case InstructionTypes.PileField:
                     declInst = NewUnlinkedFieldDeclarationInstance(instId);
                     break;
-                case SsaInstructionTypes.PileStack:
+                case InstructionTypes.PileStack:
                     declInst = NewUnlinkedStackLocationDeclarationInstance(instId);
                     break;
                 default:

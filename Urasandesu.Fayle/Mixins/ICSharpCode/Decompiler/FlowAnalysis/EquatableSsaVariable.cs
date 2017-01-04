@@ -33,6 +33,7 @@ using ICSharpCode.Decompiler.FlowAnalysis;
 using System;
 using System.Collections.Generic;
 using Urasandesu.Fayle.Mixins.Mono.Cecil;
+using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 {
@@ -89,9 +90,9 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
         {
             var hashCode = 0;
             hashCode ^= OriginalVariableIndex.GetHashCode();
-            hashCode ^= VariableType != null ? VariableType.GetHashCode() : 0;
-            hashCode ^= Name != null ? Name.GetHashCode() : 0;
-            hashCode ^= Method != null ? Method.GetHashCode() : 0;
+            hashCode ^= ObjectMixin.GetHashCode(VariableType);
+            hashCode ^= ObjectMixin.GetHashCode(Name);
+            hashCode ^= ObjectMixin.GetHashCode(Method);
             return hashCode;
         }
 

@@ -36,7 +36,9 @@ using System.Linq;
 using Urasandesu.Fayle.Infrastructures;
 using Urasandesu.Fayle.Mixins.Mono.Cecil;
 using Urasandesu.Fayle.Mixins.Mono.Cecil.Cil;
+using Urasandesu.Fayle.Mixins.System;
 using Urasandesu.Fayle.Mixins.System.Collections.Generic;
+using Urasandesu.Fayle.Mixins.System.Linq;
 
 namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 {
@@ -153,7 +155,7 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             {
                 if (!m_isInstInit)
                 {
-                    m_inst = Source.Instruction == null ? null : new EquatableInstruction(Source.Instruction, Method);
+                    m_inst = Source.Instruction.Maybe(o => new EquatableInstruction(o, Method));
                     m_isInstInit = true;
                 }
                 return m_inst;
@@ -166,7 +168,7 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             get
             {
                 if (m_operands == null)
-                    m_operands = Source.Operands.Select(_ => new EquatableSsaVariable(_, Method)).ToArray();
+                    m_operands = Source.Operands.Maybe(o => o.WhereNotNull().Select(_ => new EquatableSsaVariable(_, Method)).ToArray());
                 return m_operands;
             }
         }
@@ -179,7 +181,7 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             {
                 if (!m_isTargetInit)
                 {
-                    m_target = Source.Target == null ? null : new EquatableSsaVariable(Source.Target, Method);
+                    m_target = Source.Target.Maybe(o => new EquatableSsaVariable(o, Method));
                     m_isTargetInit = true;
                 }
                 return m_target;
@@ -203,6 +205,14 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
         public bool IsConstantInstruction { get { return Source.IsConstantInstruction(); } }
         public bool IsLoadVariableInstruction { get { return Source.IsLoadVariableInstruction(); } }
         public bool IsStoreVariableInstruction { get { return Source.IsStoreVariableInstruction(); } }
+
+        public bool IsBranchTargetOf(EquatableSsaInstruction inst)
+        {
+            if (inst == null)
+                return false;
+
+            return inst.Instruction.Maybe(o => o.IsBranchTargetOf(Instruction));
+        }
     }
 }
 

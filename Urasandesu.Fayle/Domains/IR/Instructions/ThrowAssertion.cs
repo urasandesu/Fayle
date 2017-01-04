@@ -29,7 +29,6 @@
 
 
 
-using System;
 using System.Collections.Generic;
 using Urasandesu.Fayle.Domains.SmtLib;
 
@@ -39,7 +38,7 @@ namespace Urasandesu.Fayle.Domains.IR.Instructions
     {
         public override IEnumerable<SmtLibString> GetSmtLibStrings(SmtLibStringContext ctx)
         {
-            throw new NotImplementedException(string.Format("The instruction '{0}' is not implemented.", Id.Instruction));
+            yield break;
         }
     }
 }

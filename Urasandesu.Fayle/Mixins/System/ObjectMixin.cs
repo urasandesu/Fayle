@@ -1,5 +1,5 @@
 ﻿/* 
- * File: AssignmentRelationIsLatest.cs
+ * File: ObjectMixin.cs
  * 
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
@@ -30,35 +30,30 @@
 
 
 using System;
-using Urasandesu.Fayle.Infrastructures;
 
-namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
+namespace Urasandesu.Fayle.Mixins.System
 {
-    public struct AssignmentRelationIsLatest : ISpecification
+    public static class ObjectMixin
     {
-        readonly VariableAssignment m_varAssign;
-
-        public AssignmentRelationIsLatest(VariableAssignment varAssign)
-            : this()
+        public static TResult Maybe<T, TResult>(this T @this, Func<T, TResult> invoker) where T : class
         {
-            if (!varAssign.IsValid)
-                throw new ArgumentException("The parameter must be valid.", "varAssign");
-
-            m_varAssign = varAssign;
+            return Maybe(@this, invoker, default(TResult));
         }
 
-        public bool IsSatisfiedBy(AssignmentRelation obj)
+        public static TResult Maybe<T, TResult>(this T @this, Func<T, TResult> invoker, TResult defaultResult) where T : class
         {
-            if (obj == null)
-                return false;
+            if (invoker == null)
+                throw new ArgumentNullException("invoker");
 
-            return obj.Offset < m_varAssign.Offset &&
-                   object.Equals(obj.LatestSourceOriginalVariable, m_varAssign.Source.OriginalVariable);
+            if (@this == null)
+                return defaultResult;
+
+            return invoker(@this);
         }
 
-        bool ISpecification.IsSatisfiedBy(object obj)
+        public static int GetHashCode<T>(T @this)
         {
-            return IsSatisfiedBy(obj as AssignmentRelation);
+            return @this != null ? @this.GetHashCode() : 0;
         }
     }
 }

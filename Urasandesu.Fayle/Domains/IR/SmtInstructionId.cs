@@ -100,11 +100,13 @@ namespace Urasandesu.Fayle.Domains.IR
 
         public EquatableSsaInstruction Instruction { get { return StringAttribute.Instruction; } }
         public SmtLibStringKind Kind { get { return StringAttribute.Kind; } }
-        public SsaInstructionTypes Type { get { return Kind.Type; } }
+        public InstructionTypes Type { get { return Kind.Type; } }
         public bool IsAssertion { get { return Kind.IsAssertion; } }
         public bool IsDeclaration { get { return Kind.IsDeclaration; } }
-        public SsaExceptionGroup ExceptionGroup { get { return Kind.ExceptionGroup; } }
+        public ExceptionGroup ExceptionGroup { get { return Kind.ExceptionGroup; } }
+        public EquatableSsaBlock ExceptionSource { get { return Kind.ExceptionSource; } }
         public Index ExceptionSourceIndex { get { return Kind.ExceptionSourceIndex; } }
+        public bool IsExceptionSource { get { return Kind.IsExceptionThrowable; } }
 
         public override int GetHashCode()
         {
@@ -114,7 +116,7 @@ namespace Urasandesu.Fayle.Domains.IR
             var hashCode = 0;
             hashCode ^= ParentBlockId.GetHashCode();
             hashCode ^= StringAttribute.GetHashCode();
-            hashCode ^= ScopedObject != null ? ScopedObject.GetHashCode() : 0;
+            hashCode ^= ObjectMixin.GetHashCode(ScopedObject);
             return hashCode;
         }
 

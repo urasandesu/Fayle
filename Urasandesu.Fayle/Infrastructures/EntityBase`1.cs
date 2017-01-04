@@ -1,5 +1,5 @@
 ﻿/* 
- * File: AssignmentRelationIsLatest.cs
+ * File: EntityBase`1.cs
  * 
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
@@ -29,36 +29,41 @@
 
 
 
-using System;
-using Urasandesu.Fayle.Infrastructures;
 
-namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
+namespace Urasandesu.Fayle.Infrastructures
 {
-    public struct AssignmentRelationIsLatest : ISpecification
+    public abstract class EntityBase<TId> : IEntity<TId>
     {
-        readonly VariableAssignment m_varAssign;
+        public virtual TId Id { get; set; }
 
-        public AssignmentRelationIsLatest(VariableAssignment varAssign)
-            : this()
+        public override bool Equals(object obj)
         {
-            if (!varAssign.IsValid)
-                throw new ArgumentException("The parameter must be valid.", "varAssign");
-
-            m_varAssign = varAssign;
-        }
-
-        public bool IsSatisfiedBy(AssignmentRelation obj)
-        {
-            if (obj == null)
+            var other = default(EntityBase<TId>);
+            if ((other = obj as EntityBase<TId>) == null)
                 return false;
 
-            return obj.Offset < m_varAssign.Offset &&
-                   object.Equals(obj.LatestSourceOriginalVariable, m_varAssign.Source.OriginalVariable);
+            return object.Equals(Id, other.Id);
         }
 
-        bool ISpecification.IsSatisfiedBy(object obj)
+        public override int GetHashCode()
         {
-            return IsSatisfiedBy(obj as AssignmentRelation);
+            return Id != null ? Id.GetHashCode() : 0;
+        }
+
+        public static bool operator ==(EntityBase<TId> lhs, EntityBase<TId> rhs)
+        {
+            if ((object)lhs != null)
+                return lhs.Equals(rhs);
+            else if ((object)rhs != null)
+                return rhs.Equals(lhs);
+            else
+                return true;
+        }
+
+        public static bool operator !=(EntityBase<TId> lhs, EntityBase<TId> rhs)
+        {
+            return !(lhs == rhs);
         }
     }
 }
+

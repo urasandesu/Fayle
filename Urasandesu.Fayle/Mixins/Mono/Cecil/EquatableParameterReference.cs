@@ -35,7 +35,7 @@ using Urasandesu.Fayle.Infrastructures;
 using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil
-{                
+{
     public class EquatableParameterReference : IValueObject, IEquatable<EquatableParameterReference>, IComparable<EquatableParameterReference>, IIdentityValidator, ICastable<ParameterReference>
     {
         public EquatableParameterReference()

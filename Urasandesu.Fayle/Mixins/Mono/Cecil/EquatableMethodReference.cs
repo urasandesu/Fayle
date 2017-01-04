@@ -270,7 +270,8 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil
             {
                 return Resolve().GetParameterType(inst);
             }
-            else if (inst.IsLoadVariableInstruction())
+            else if (inst.IsLoadVariableInstruction() || 
+                     inst.IsStoreVariableInstruction())
             {
                 return Resolve().GetVariableType(inst);
             }

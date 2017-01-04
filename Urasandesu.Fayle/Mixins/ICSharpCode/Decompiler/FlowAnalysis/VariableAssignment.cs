@@ -32,16 +32,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Urasandesu.Fayle.Infrastructures;
 using Urasandesu.Fayle.Mixins.Mono.Cecil;
+using Urasandesu.Fayle.Mixins.System;
 using Urasandesu.Fayle.Mixins.System.Linq;
 
 namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 {
     public struct VariableAssignment : IValueObject, IEquatable<VariableAssignment>, IComparable<VariableAssignment>, IIdentityValidator
     {
-        public VariableAssignment(InvocationSite @is, IEnumerable<EquatableSsaInstruction> callStack, EquatableSsaInstruction inst, IEquatableVariable source, IEquatableVariable target)
+        public VariableAssignment(InvocationSite @is, IEnumerable<EquatableSsaInstruction> callStack, EquatableSsaInstruction inst, IEnumerable<KeyValuePair<EquatableMethodDefinition, int>> calledMeths, IEquatableVariable source, IEquatableVariable target)
             : this()
         {
             if (!@is.IsValid)
@@ -53,6 +55,9 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             if (inst == null)
                 throw new ArgumentNullException("inst");
 
+            if (calledMeths == null)
+                throw new ArgumentNullException("calledMeths");
+
             if (source == null)
                 throw new ArgumentNullException("source");
 
@@ -62,6 +67,7 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             InvocationSite = @is;
             CallStack = callStack.ToArray();
             Instruction = inst;
+            CalledMethods = new ReadOnlyDictionary<EquatableMethodDefinition, int>(calledMeths.ToDictionary(_ => _.Key, _ => _.Value));
             Source = source;
             Target = target;
             IsValid = true;
@@ -70,28 +76,38 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
         public bool IsValid { get; private set; }
         public InvocationSite InvocationSite { get; private set; }
         public EquatableSsaInstruction[] CallStack { get; private set; }
-        public int CallHierarchy { get { return CallStack != null ? CallStack.Length : 0; } }
+        public ReadOnlyDictionary<EquatableMethodDefinition, int> CalledMethods { get; private set; }
         public EquatableSsaInstruction Instruction { get; private set; }
         public IEquatableVariable Source { get; private set; }
         public IEquatableVariable Target { get; private set; }
 
-        public int GetOffset()
+        int? m_offset;
+        public int Offset
         {
-            if (CallStack == null && Instruction == null)
-                return 0;
-
-            if (CallStack == null)
-                return Instruction == null ? 0 : Instruction.Instruction.Offset;
-
-            if (Instruction == null)
-                return GetOffset(0, CallStack);
-
-            return GetOffset(Instruction.Instruction == null ? 0 : Instruction.Instruction.Offset, CallStack);
+            get
+            {
+                if (!m_offset.HasValue)
+                    m_offset = GetOffset();
+                return m_offset.Value;
+            }
         }
 
-        static int GetOffset(int seed, EquatableSsaInstruction[] callStack)
+        int GetOffset()
         {
-            return callStack.Aggregate(seed, (result, next) => result + (next.Instruction == null ? 0 : next.Instruction.Offset));
+            var instOffset = GetInstructionOffset(Instruction);
+            var callStackOffset = CallStack.Maybe(o => o.Aggregate(0, (result, next) => result + GetInstructionOffset(next)));
+            var calledMethodsOffset = CalledMethods.Maybe(o => o.Aggregate(0, (result, next) => result + GetCalledMethodOffset(next)));
+            return instOffset + callStackOffset + calledMethodsOffset;
+        }
+
+        static int GetInstructionOffset(EquatableSsaInstruction inst)
+        {
+            return inst.Maybe(o => o.Instruction).Maybe(o => o.Offset);
+        }
+
+        static int GetCalledMethodOffset(KeyValuePair<EquatableMethodDefinition, int> calledMethod)
+        {
+            return calledMethod.Key.Maybe(o => o.Body).Maybe(o => o.CodeSize) * calledMethod.Value;
         }
 
         public override int GetHashCode()
@@ -101,10 +117,11 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 
             var hashCode = 0;
             hashCode ^= InvocationSite.GetHashCode();
-            hashCode ^= CallStack != null ? CallStack.Aggregate(0, (result, next) => result ^ next.GetHashCode()) : 0;
-            hashCode ^= Instruction != null ? Instruction.GetHashCode() : 0;
-            hashCode ^= Source != null ? Source.GetHashCode() : 0;
-            hashCode ^= Target != null ? Target.GetHashCode() : 0;
+            hashCode ^= CallStack.NullableSequenceGetHashCode();
+            hashCode ^= ObjectMixin.GetHashCode(Instruction);
+            hashCode ^= CalledMethods.NullableDictionaryGetHashCode();
+            hashCode ^= ObjectMixin.GetHashCode(Source);
+            hashCode ^= ObjectMixin.GetHashCode(Target);
             return hashCode;
         }
 
@@ -120,6 +137,9 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
                 return false;
 
             if (Instruction != other.Instruction)
+                return false;
+
+            if (!CalledMethods.NullableDictionaryEqual(other.CalledMethods))
                 return false;
 
             if (!object.Equals(Source, other.Source))
@@ -159,7 +179,7 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             if ((result = InvocationSite.CompareTo(other.InvocationSite)) != 0)
                 return result;
 
-            if ((result = GetOffset().CompareTo(other.GetOffset())) != 0)
+            if ((result = Offset.CompareTo(other.Offset)) != 0)
                 return result;
 
             if ((result = Comparer.Default.Compare(Instruction, other.Instruction)) != 0)
@@ -181,7 +201,7 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 
         public override string ToString()
         {
-            return string.Format("{0}: [{1}]: {2} -> {3}", GetOffset().ToString("X8"), CallHierarchy, Source, Target);
+            return string.Format("{0}: {1} -> {2}", GetOffset().ToString("X8"), Source, Target);
         }
     }
 }

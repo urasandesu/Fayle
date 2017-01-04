@@ -44,11 +44,11 @@ namespace Urasandesu.Fayle.Domains.SmtLib.Symbols
         }
 
         public SortSymbol Sort { get; private set; }
-        public DatatypesSentence Type { get { return Sort == null ? null : Sort.Type; } }
+        public DatatypesSentence Type { get { return Sort.Type; } }
 
         public SmtLibStringPart GetConstructorInvocation(SmtLibStringContext ctx, params object[] args)
         {
-            return Type == null ? SmtLibStringPart.Empty : Type.GetConstructorInvocation(ctx, args);
+            return Type.GetConstructorInvocation(ctx, args);
         }
     }
 }

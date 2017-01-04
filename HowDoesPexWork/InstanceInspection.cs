@@ -38,10 +38,10 @@ namespace HowDoesPexWork
         public static void Puzzle(object v)
         {
             if (v is int)
-                throw new Exception("instance inspection!");
+                throw new Exception("instance inspection! (int)");
 
             if (v is double)
-                throw new Exception("instance inspection!");
+                throw new Exception("instance inspection! (double)");
         }
     }
 }

@@ -46,12 +46,6 @@ namespace Urasandesu.Fayle.Domains.Z3
             base.Id = id;
         }
 
-        public sealed override InterpretedConstant Id
-        {
-            get { return base.Id; }
-            set { throw new NotSupportedException(); }
-        }
-
         public string ConstantName { get { return Id.ConstantName; } }
         public string Name { get { return Id.Name; } }
         public Sort Range { get { return Id.Range; } }

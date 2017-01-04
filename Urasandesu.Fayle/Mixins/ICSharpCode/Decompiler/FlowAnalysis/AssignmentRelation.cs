@@ -49,24 +49,19 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
         }
 
         public InvocationSite InvocationSite { get { return Id.InvocationSite; } }
-        public int CallHierarchy { get { return Id.CallHierarchy; } }
         public IEquatableVariable Source { get { return Id.Source; } }
-
-        public int GetOffset()
-        {
-            return Id.GetOffset();
-        }
+        public int Offset { get { return Id.Offset; } }
 
         public IEquatableVariable LatestSource
         {
             get
             {
                 if (Ancestors == null)
-                    return null;
+                    return Source;
 
                 var latestAncestor = Ancestors.LastOrDefault();
                 if (latestAncestor == null)
-                    return null;
+                    return Source;
 
                 return latestAncestor.Source;
             }
@@ -90,11 +85,11 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             get
             {
                 if (Ancestors == null)
-                    return null;
+                    return Target;
 
                 var latestAncestor = Ancestors.LastOrDefault();
                 if (latestAncestor == null)
-                    return null;
+                    return Target;
 
                 return latestAncestor.Target;
             }

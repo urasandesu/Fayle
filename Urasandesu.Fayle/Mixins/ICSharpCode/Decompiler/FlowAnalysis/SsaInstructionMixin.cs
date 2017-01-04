@@ -33,6 +33,7 @@ using ICSharpCode.Decompiler.FlowAnalysis;
 using System;
 using System.Collections.Generic;
 using Urasandesu.Fayle.Mixins.Mono.Cecil.Cil;
+using Urasandesu.Fayle.Mixins.System;
 using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
@@ -65,7 +66,7 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             if (@this == null)
                 throw new ArgumentNullException("@this");
 
-            return @this.Instruction != null ? @this.Instruction.Offset : -1;
+            return @this.Instruction.Maybe(o => o.Offset, -1);
         }
 
         public static int GetDeclarationHashCode(this SsaInstruction @this)

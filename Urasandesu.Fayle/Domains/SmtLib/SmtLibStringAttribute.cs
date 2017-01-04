@@ -53,10 +53,10 @@ namespace Urasandesu.Fayle.Domains.SmtLib
         public SmtLibStringKind Kind { get; private set; }
         public bool IsValid { get; private set; }
 
-        public SsaInstructionTypes Type { get { return Kind.Type; } }
+        public InstructionTypes Type { get { return Kind.Type; } }
         public bool IsAssertion { get { return Kind.IsAssertion; } }
         public bool IsDeclaration { get { return Kind.IsDeclaration; } }
-        public SsaExceptionGroup ExceptionGroup { get { return Kind.ExceptionGroup; } }
+        public ExceptionGroup ExceptionGroup { get { return Kind.ExceptionGroup; } }
         public Index ExceptionSourceIndex { get { return Kind.ExceptionSourceIndex; } }
 
         public override int GetHashCode()
@@ -65,7 +65,7 @@ namespace Urasandesu.Fayle.Domains.SmtLib
                 return 0;
 
             var hashCode = 0;
-            hashCode ^= Instruction != null ? Instruction.GetHashCode() : 0;
+            hashCode ^= ObjectMixin.GetHashCode(Instruction);
             hashCode ^= Kind.GetHashCode();
             return hashCode;
         }

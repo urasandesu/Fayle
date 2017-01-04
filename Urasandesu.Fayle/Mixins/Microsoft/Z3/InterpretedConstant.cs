@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Urasandesu.Fayle.Infrastructures;
+using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Mixins.Microsoft.Z3
 {
@@ -148,8 +149,8 @@ namespace Urasandesu.Fayle.Mixins.Microsoft.Z3
                 return 0;
 
             var hashCode = 0;
-            hashCode ^= (object)Constant != null ? Constant.GetHashCode() : 0;
-            hashCode ^= (object)Expression != null ? Expression.GetHashCode() : 0;
+            hashCode ^= ObjectMixin.GetHashCode(Constant);
+            hashCode ^= ObjectMixin.GetHashCode(Expression);
             return hashCode;
         }
 

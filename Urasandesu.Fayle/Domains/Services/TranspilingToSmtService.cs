@@ -119,6 +119,7 @@ namespace Urasandesu.Fayle.Domains.Services
             foreach (var smtBlock in smtBlocks)
             {
                 smtBlock.Predecessors = m_smtBlockRepos.FindBy(smtBlock.BlockIsPredecessor).ToArray();
+                smtBlock.Successors = m_smtBlockRepos.FindBy(smtBlock.BlockIsSuccessor).ToArray();
                 smtBlock.SameParentBlockInstructions = m_smtInstRepos.FindBy(smtBlock.InstructionHasSameParentBlock).ToArray();
                 smtBlock.Declarations = m_smtInstRepos.FindBy(smtBlock.InstructionIsDeclaration).ToArray();
                 smtBlock.SameParentBlockAssertions = m_smtInstRepos.FindBy(smtBlock.InstructionHasSameParentBlock.And(smtBlock.InstructionIsAssertion)).ToArray();
@@ -132,6 +133,9 @@ namespace Urasandesu.Fayle.Domains.Services
 
         void TranspileInstructions(SmtForm smtForm, EquatableSsaBlock eqSsaBlock)
         {
+            if (eqSsaBlock.IsTerminalNode)
+                m_smtBlockRepos.Store(m_smtBlockFactory.NewNormalInstance(smtForm, eqSsaBlock));
+
             foreach (var smtInst in m_smtInstFactory.NewUnlinkedInstances(smtForm.Id, smtForm.Form, eqSsaBlock))
             {
                 var smtBlock = m_smtBlockFactory.NewInstance(smtForm, eqSsaBlock, smtInst);

@@ -1,5 +1,5 @@
 ﻿/* 
- * File: SsaInstructionGroup.cs
+ * File: InstructionGroup.cs
  * 
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
@@ -36,18 +36,19 @@ using Urasandesu.Fayle.Mixins.System;
 
 namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 {
-    public struct SsaInstructionGroup : IValueObject, IEquatable<SsaInstructionGroup>, IComparable<SsaInstructionGroup>
+    public struct InstructionGroup : IValueObject, IEquatable<InstructionGroup>, IComparable<InstructionGroup>, IIdentityValidator
     {
-        public SsaInstructionGroup(Index blockIndex, SsaInstructionTypes type, SsaExceptionGroup exGrp, Index exSrcIndex)
+        public InstructionGroup(Index blockIndex, InstructionTypes type, ExceptionGroup exGrp, Index exSrcIndex)
             : this()
         {
             BlockIndex = blockIndex;
             Type = type;
             ExceptionGroup = exGrp;
             ExceptionSourceIndex = exSrcIndex;
+            IsValid = true;
         }
 
-        public SsaInstructionGroup(SsaInstructionGroup @base, int pathNum)
+        public InstructionGroup(InstructionGroup @base, int pathNum)
             : this()
         {
             BlockIndex = @base.BlockIndex;
@@ -55,17 +56,19 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             ExceptionGroup = @base.ExceptionGroup;
             ExceptionSourceIndex = @base.ExceptionSourceIndex;
             PathNumber = pathNum;
+            IsValid = true;
         }
 
         public Index BlockIndex { get; private set; }
-        public SsaInstructionTypes Type { get; private set; }
-        public SsaExceptionGroup ExceptionGroup { get; private set; }
+        public InstructionTypes Type { get; private set; }
+        public ExceptionGroup ExceptionGroup { get; private set; }
         public Index ExceptionSourceIndex { get; private set; }
         public int PathNumber { get; private set; }
+        public bool IsValid { get; private set; }
 
-        public SsaInstructionGroup GetFirstPathGroup()
+        public InstructionGroup GetFirstPathGroup()
         {
-            return new SsaInstructionGroup(this, 0);
+            return new InstructionGroup(this, 0);
         }
 
         public override int GetHashCode()
@@ -81,14 +84,14 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
 
         public override bool Equals(object obj)
         {
-            var other = default(SsaInstructionGroup?);
-            if ((other = obj as SsaInstructionGroup?) == null)
+            var other = default(InstructionGroup?);
+            if ((other = obj as InstructionGroup?) == null)
                 return false;
 
-            return ((IEquatable<SsaInstructionGroup>)this).Equals(other.Value);
+            return ((IEquatable<InstructionGroup>)this).Equals(other.Value);
         }
 
-        public bool Equals(SsaInstructionGroup other)
+        public bool Equals(InstructionGroup other)
         {
             if (BlockIndex != other.BlockIndex)
                 return false;
@@ -108,17 +111,17 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             return true;
         }
 
-        public static bool operator ==(SsaInstructionGroup lhs, SsaInstructionGroup rhs)
+        public static bool operator ==(InstructionGroup lhs, InstructionGroup rhs)
         {
             return lhs.Equals(rhs);
         }
 
-        public static bool operator !=(SsaInstructionGroup lhs, SsaInstructionGroup rhs)
+        public static bool operator !=(InstructionGroup lhs, InstructionGroup rhs)
         {
             return !(lhs == rhs);
         }
 
-        public int CompareTo(SsaInstructionGroup other)
+        public int CompareTo(InstructionGroup other)
         {
             var result = 0;
             if ((result = BlockIndex.CompareTo(other.BlockIndex)) != 0)
@@ -154,6 +157,11 @@ namespace Urasandesu.Fayle.Mixins.ICSharpCode.Decompiler.FlowAnalysis
             sb.Append(PathNumber);
             sb.Append(")");
             return sb.ToString();
+        }
+
+        public void Validate()
+        {
+            // nop, because the validity of this instance is determined when constructing it.
         }
     }
 }

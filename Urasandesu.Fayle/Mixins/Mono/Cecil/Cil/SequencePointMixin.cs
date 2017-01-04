@@ -1,5 +1,5 @@
 ﻿/* 
- * File: MethodBodyMixin.cs
+ * File: SequencePointMixin.cs
  * 
  * Author: Akira Sugiura (urasandesu@gmail.com)
  * 
@@ -29,7 +29,6 @@
 
 
 
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
@@ -38,9 +37,9 @@ using Urasandesu.Fayle.Mixins.System.Collections.Generic;
 
 namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
 {
-    public static class MethodBodyMixin
+    public static class SequencePointMixin
     {
-        public static bool IsSameDeclaration(this MethodBody @this, MethodBody other)
+        public static bool IsSameDeclaration(this SequencePoint @this, SequencePoint other)
         {
             if (@this == null)
                 throw new ArgumentNullException("@this");
@@ -48,10 +47,14 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
             if (other == null)
                 return false;
 
-            return MemberReferenceMixin.AreSameDeclaration(@this.Method, other.Method);
+            return DocumentMixin.AreSameDeclaration(@this.Document, other.Document) &&
+                   @this.EndColumn == other.EndColumn &&
+                   @this.EndLine == other.EndLine &&
+                   @this.StartColumn == other.StartColumn &&
+                   @this.StartLine == other.StartLine;
         }
 
-        public static bool AreSameDeclaration(MethodBody lhs, MethodBody rhs)
+        public static bool AreSameDeclaration(SequencePoint lhs, SequencePoint rhs)
         {
             if (lhs == null && rhs == null)
                 return true;
@@ -61,17 +64,21 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
             return lhs.IsSameDeclaration(rhs);
         }
 
-        public static int GetDeclarationHashCode(this MethodBody @this)
+        public static int GetDeclarationHashCode(this SequencePoint @this)
         {
             if (@this == null)
                 throw new ArgumentNullException("this");
 
             var hash = 0;
-            hash ^= @this.Method.Maybe(o => o.GetDeclarationHashCode());
+            hash ^= @this.Document.Maybe(o => o.GetDeclarationHashCode());
+            hash ^= @this.EndColumn.GetHashCode();
+            hash ^= @this.EndLine.GetHashCode();
+            hash ^= @this.StartColumn.GetHashCode();
+            hash ^= @this.StartLine.GetHashCode();
             return hash;
         }
 
-        public static int CompareByDeclarationTo(this MethodBody @this, MethodBody other)
+        public static int CompareByDeclarationTo(this SequencePoint @this, SequencePoint other)
         {
             if (@this == null)
                 throw new ArgumentNullException("this");
@@ -80,52 +87,30 @@ namespace Urasandesu.Fayle.Mixins.Mono.Cecil.Cil
                 return 1;
 
             var result = 0;
-            if ((result = MemberReferenceMixin.CompareByDeclaration(@this.Method, other.Method)) != 0)
+            if ((result = DocumentMixin.CompareByDeclaration(@this.Document, other.Document)) != 0)
+                return result;
+
+            if ((result = @this.EndColumn.CompareTo(other.EndColumn)) != 0)
+                return result;
+
+            if ((result = @this.EndLine.CompareTo(other.EndLine)) != 0)
+                return result;
+
+            if ((result = @this.StartColumn.CompareTo(other.StartColumn)) != 0)
+                return result;
+
+            if ((result = @this.StartLine.CompareTo(other.StartLine)) != 0)
                 return result;
 
             return result;
         }
 
-        static readonly IComparer<MethodBody> ms_defaultComparer = NullValueIsMinimumComparer<MethodBody>.Make((_1, _2) => _1.CompareByDeclarationTo(_2));
-        public static IComparer<MethodBody> DefaultComparer { get { return ms_defaultComparer; } }
+        static readonly IComparer<SequencePoint> ms_defaultComparer = NullValueIsMinimumComparer<SequencePoint>.Make((_1, _2) => _1.CompareByDeclarationTo(_2));
+        public static IComparer<SequencePoint> DefaultComparer { get { return ms_defaultComparer; } }
 
-        public static int CompareByDeclaration(MethodBody lhs, MethodBody rhs)
+        public static int CompareByDeclaration(SequencePoint lhs, SequencePoint rhs)
         {
             return DefaultComparer.Compare(lhs, rhs);
-        }
-
-        public static VariableDefinition GetVariable(this MethodBody @this, Instruction inst)
-        {
-            if (@this == null)
-                throw new ArgumentNullException("this");
-
-            var index = inst.GetVariableIndex();
-
-            if (!@this.VerifyVariableIndex(index))
-                throw new ArgumentOutOfRangeException("inst", index, @this.ToVariableOutOfRangeMessage());
-
-            return @this.Variables[index];
-        }
-
-        public static TypeReference GetVariableType(this MethodBody @this, Instruction inst)
-        {
-            return @this.GetVariable(inst).VariableType;
-        }
-
-        public static bool VerifyVariableIndex(this MethodBody @this, int index)
-        {
-            if (@this == null)
-                throw new ArgumentNullException("this");
-
-            return 0 <= index && index < @this.Variables.Count;
-        }
-
-        public static string ToVariableOutOfRangeMessage(this MethodBody @this)
-        {
-            if (@this == null)
-                throw new ArgumentNullException("this");
-
-            return string.Format("The parameter must be the variable handle instruction that indicates between 0 and {0}.", @this.Variables.Count - 1);
         }
     }
 }

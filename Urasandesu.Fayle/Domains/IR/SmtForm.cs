@@ -29,9 +29,11 @@
 
 
 
+using ICSharpCode.Decompiler.FlowAnalysis;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Urasandesu.Fayle.Domains.SmtLib;
 using Urasandesu.Fayle.Infrastructures;
@@ -123,7 +125,7 @@ namespace Urasandesu.Fayle.Domains.IR
         IEnumerable<EquatablePreservedType> GetUnknownTypesCore()
         {
             var unkTypeHash = new HashSet<EquatablePreservedType>();
-            foreach (var grpdInsts in GetGroupedInstructions())
+            foreach (var grpdInsts in GetGroupedShortestPathInstructions())
             {
                 var query = from inst in grpdInsts
                             let unkTypes = inst.GetUnknownType()
@@ -147,7 +149,7 @@ namespace Urasandesu.Fayle.Domains.IR
         IEnumerable<EquatablePreservedMethod> GetUnknownMethodsCore()
         {
             var unkMethHash = new HashSet<EquatablePreservedMethod>();
-            foreach (var grpdInsts in GetGroupedInstructions())
+            foreach (var grpdInsts in GetGroupedShortestPathInstructions())
             {
                 var query = from inst in grpdInsts
                             let unkMeth = inst.GetUnknownMethod()
@@ -176,46 +178,196 @@ namespace Urasandesu.Fayle.Domains.IR
 
         IEnumerable<SmtLibStringCollection> GetFullPathCoveredSmtLibStringsCore(SmtLibStringContext ctx)
         {
-            foreach (var grpdInsts in GetFullPathCoveredInstructions(ctx))
-                foreach (var ss in GetAllSmtLibString(ctx, grpdInsts).ExtractContext(ctx))
+            var grpdInstss = from grpdInsts in GetGroupedShortestPathInstructions(ctx.CallHierarchy)
+                             orderby grpdInsts.Key
+                             select grpdInsts;
+
+            foreach (var rawss in NarrowToOnlyCoverageIncreasables(ctx, grpdInstss.ToArray()))
+                foreach (var ss in rawss.ExtractContext(ctx))
                     yield return ss;
         }
 
-        SmtLibStringCollection GetAllSmtLibString(SmtLibStringContext ctx, IGrouping<SsaInstructionGroup, SmtInstruction> grpdInsts)
+        public IEnumerable<IGrouping<SmtBlock, SmtBlock>> GetAllShortestPaths()
         {
-            var hash = new HashSet<SmtLibString>();
-            var ss = new List<SmtLibString>();
-            var query = from inst in grpdInsts
-                        from s in inst.GetSmtLibStrings(ctx)
-                        select s;
-            foreach (var s in query)
-                if (hash.Add(s))
-                    ss.Add(s);
-            return new SmtLibStringCollection(ss) { Id = grpdInsts.Key };
+            return GetAllShortestPaths(0);
         }
 
-        IEnumerable<IGrouping<SsaInstructionGroup, SmtInstruction>> GetFullPathCoveredInstructions(SmtLibStringContext ctx)
+        public IEnumerable<IGrouping<SmtBlock, SmtBlock>> GetAllShortestPaths(int callHierarchy)
         {
-            var branchableInsts = from grpdInsts in GetGroupedInstructions().Reverse()
-                                  where 0 < ctx.CallHierarchy || grpdInsts.Last().IsBranchable
-                                  select grpdInsts;
-            return NarrowToOnlyCoverageIncreasables(ctx, branchableInsts).Reverse();
+            var shortestPaths = GetShortestPathsToRegularExit(PrepareShortestPathsToNormalBranch());
+            shortestPaths = GetShortestPathsToExceptionalExit(PrepareShortestPathsToExceptionalBranch()).Concat(shortestPaths);
+            if (0 < callHierarchy)
+                shortestPaths = GetShortestPathsToRegularExit().Concat(shortestPaths);
+            return shortestPaths;
         }
 
-        public IEnumerable<IGrouping<SsaInstructionGroup, SmtInstruction>> GetGroupedInstructions()
+        ReadOnlyDictionary<SmtBlock, IEnumerable<SmtBlock>> PrepareShortestPathsToNormalBranch()
         {
-            var keyHash = new HashSet<SsaInstructionGroup>();
-            var query = from block in Blocks
-                        where block.IsAssertion
-                        let grp = new SsaInstructionGroup(block.Id.BlockIndex, block.Id.Kind.Type, block.Id.ExceptionGroup, block.Id.ExceptionSourceIndex)
-                        where keyHash.Add(grp)
-                        select GetGroupedBlockInstructions(grp, block);
+            var starts = from block in Blocks
+                         where block.NodeType == ControlFlowNodeType.EntryPoint
+                         select block;
+
+            var middles = from block in Blocks
+                          where !block.IsExceptionThrowable && block.HasBranchableLastAssertion
+                          select block;
+
+            var query = from start in starts
+                        from middle in middles
+                        let path = GetShortestPath(start, middle)
+                        select new IntermediatePaths(middle, path);
+
+            return new ReadOnlyDictionary<SmtBlock, IEnumerable<SmtBlock>>(query.ToDictionary(_ => _.Middle, _ => _.Path));
+        }
+
+        ReadOnlyDictionary<SmtBlock, IEnumerable<SmtBlock>> PrepareShortestPathsToExceptionalBranch()
+        {
+            var starts = from block in Blocks
+                         where block.NodeType == ControlFlowNodeType.EntryPoint
+                         select block;
+
+            var middles = from block in Blocks
+                          where block.IsExceptionThrowable && block.IsBranchBlock
+                          select block;
+
+            var query = from start in starts
+                        from middle in middles
+                        let path = GetShortestPath(start, middle)
+                        select new IntermediatePaths(middle, path);
+
+            return new ReadOnlyDictionary<SmtBlock, IEnumerable<SmtBlock>>(query.ToDictionary(_ => _.Middle, _ => _.Path));
+        }
+
+        struct IntermediatePaths
+        {
+            public IntermediatePaths(SmtBlock middle, IEnumerable<SmtBlock> path)
+            {
+                Middle = middle;
+                Path = path;
+            }
+
+            public readonly SmtBlock Middle;
+            public readonly IEnumerable<SmtBlock> Path;
+        }
+
+        IEnumerable<IGrouping<SmtBlock, SmtBlock>> GetShortestPathsToRegularExit()
+        {
+            var starts = from block in Blocks
+                         where block.NodeType == ControlFlowNodeType.EntryPoint
+                         select block;
+
+            var ends = from block in Blocks
+                       where block.NodeType == ControlFlowNodeType.RegularExit
+                       select block;
+
+            var query = from start in starts
+                        from end in ends
+                        from path in GetShortestPath(start, end)
+                        group path by end;
+
             return query;
         }
 
-        static IGrouping<SsaInstructionGroup, SmtInstruction> GetGroupedBlockInstructions(SsaInstructionGroup grp, SmtBlock block)
+        IEnumerable<IGrouping<SmtBlock, SmtBlock>> GetShortestPathsToRegularExit(ReadOnlyDictionary<SmtBlock, IEnumerable<SmtBlock>> intermediatePaths)
         {
-            return new Grouping<SsaInstructionGroup, SmtInstruction>(grp, block.GetBlockInstructions());
+            var ends = from block in Blocks
+                       where block.NodeType == ControlFlowNodeType.RegularExit
+                       select block;
+
+            return GetShortestPathsFromMiddle(intermediatePaths, ends);
+        }
+
+        IEnumerable<IGrouping<SmtBlock, SmtBlock>> GetShortestPathsToExceptionalExit(ReadOnlyDictionary<SmtBlock, IEnumerable<SmtBlock>> intermediatePaths)
+        {
+            var ends = from block in Blocks
+                       where block.NodeType == ControlFlowNodeType.ExceptionalExit
+                       select block;
+
+            return GetShortestPathsFromMiddle(intermediatePaths, ends);
+        }
+
+        static IEnumerable<IGrouping<SmtBlock, SmtBlock>> GetShortestPathsFromMiddle(ReadOnlyDictionary<SmtBlock, IEnumerable<SmtBlock>> intermediatePaths, IEnumerable<SmtBlock> ends)
+        {
+            var query = from middle in intermediatePaths.Select(_ => _.Key)
+                        from end in ends
+                        let remainingPath = GetShortestPath(middle, end).Skip(1)
+                        where remainingPath.Any()
+                        from path in intermediatePaths[middle].Concat(remainingPath)
+                        group path by middle;
+            return query;
+        }
+
+        public IEnumerable<IGrouping<InstructionGroupedShortestPath, SmtInstruction>> GetGroupedShortestPathInstructions()
+        {
+            return GetGroupedShortestPathInstructions(0);
+        }
+
+        public IEnumerable<IGrouping<InstructionGroupedShortestPath, SmtInstruction>> GetGroupedShortestPathInstructions(int callHierarchy)
+        {
+            foreach (var shortestPath in GetAllShortestPaths(callHierarchy))
+            {
+                var declarations = GetPathDeclarations(shortestPath);
+                var assertions = GetPathAssertions(shortestPath);
+                var key = new InstructionGroupedShortestPath(shortestPath.Select(_ => _.Block).ToArray()) { Id = shortestPath.Key.GetGroup() };
+                var e = declarations.Concat(assertions);
+                yield return new Grouping<InstructionGroupedShortestPath, SmtInstruction>(key, e);
+            }
+        }
+
+        static IEnumerable<SmtInstruction> GetPathDeclarations(IGrouping<SmtBlock, SmtBlock> path)
+        {
+            var declarationHash = new HashSet<SmtInstruction>();
+            var declarations = from block in path
+                               from declaration in block.Declarations
+                               where declarationHash.Add(declaration)
+                               select declaration;
+            return declarations;
+        }
+
+        static IEnumerable<SmtInstruction> GetPathAssertions(IGrouping<SmtBlock, SmtBlock> path)
+        {
+            var assertions = from block in path
+                             from assertion in block.GetAssertionsAccordingToTypicalBlock(path.Key)
+                             select assertion;
+            return assertions;
+        }
+
+        static IEnumerable<SmtBlock> GetShortestPath(SmtBlock start, SmtBlock end)
+        {
+            var successorToCurrent = new Dictionary<SmtBlock, SmtBlock>();
+            var current = start;
+
+            var queue = new Queue<SmtBlock>();
+            queue.Enqueue(current);
+
+            var visited = new HashSet<SmtBlock>();
+            visited.Add(current);
+
+            while (queue.Count != 0)
+            {
+                current = queue.Dequeue();
+                if (current == end)
+                    break;
+
+                foreach (var successor in current.Successors)
+                {
+                    if (visited.Contains(successor))
+                        continue;
+
+                    queue.Enqueue(successor);
+                    visited.Add(successor);
+                    successorToCurrent[successor] = current;
+                }
+            }
+
+            if (current != end)
+                return Enumerable.Empty<SmtBlock>();
+
+            var result = new List<SmtBlock>();
+            for (var block = end; block != null; successorToCurrent.TryGetValue(block, out block))
+                result.Add(block);
+
+            result.Reverse();
+            return result;
         }
 
         class Grouping<TKey, TElement> : IGrouping<TKey, TElement>
@@ -241,22 +393,67 @@ namespace Urasandesu.Fayle.Domains.IR
             }
         }
 
-        static IEnumerable<IGrouping<SsaInstructionGroup, SmtInstruction>> NarrowToOnlyCoverageIncreasables(
-            SmtLibStringContext ctx, IEnumerable<IGrouping<SsaInstructionGroup, SmtInstruction>> branchableInsts)
+        static IEnumerable<SmtLibStringCollection> NarrowToOnlyCoverageIncreasables(SmtLibStringContext ctx, IGrouping<InstructionGroupedShortestPath, SmtInstruction>[] grpdInstss)
         {
-            var coveredPaths = new List<SmtLibString[]>();
-            foreach (var grpdInsts in branchableInsts)
+            var coveredStrs = new List<SmtLibString[]>();
+            foreach (var info in GetInstructionSmtLibStringInfos(ctx, grpdInstss).OrderBy(_ => _.CoveredStrings.Length))
             {
-                var query = from inst in grpdInsts
-                            where inst.IsAssertion
-                            from s in inst.GetSmtLibStrings(ctx)
-                            select s;
-                var ss = query.ToArray();
-                if (coveredPaths.Any(_ => _.StartsWith(ss)))
+                if (coveredStrs.Any(_ => _.StartsWith(info.CoveredStrings)))
                     continue;
 
-                coveredPaths.Add(ss);
-                yield return grpdInsts;
+                coveredStrs.Add(info.CoveredStrings);
+
+                yield return info.GetSmtLibStringCollection();
+            }
+        }
+
+        static IEnumerable<InstructionSmtLibStringInfo> GetInstructionSmtLibStringInfos(SmtLibStringContext ctx, IGrouping<InstructionGroupedShortestPath, SmtInstruction>[] grpdInstss)
+        {
+            foreach (var grpdInsts in grpdInstss)
+            {
+                ctx.ResetAssignmentRelation();
+                var instStrss = grpdInsts.Select(_ => InstructionSmtLibStrings.New(_, ctx)).ToArray();
+                var coveredStrs = instStrss.Where(_ => _.IsAssertion).SelectMany(_ => _.SmtLibStrings).ToArray();
+                yield return new InstructionSmtLibStringInfo(grpdInsts.Key, coveredStrs, instStrss);
+            }
+        }
+
+        struct InstructionSmtLibStringInfo
+        {
+            public InstructionSmtLibStringInfo(InstructionGroupedShortestPath path, SmtLibString[] coveredStrs, InstructionSmtLibStrings[] instStrss)
+            {
+                Path = path;
+                CoveredStrings = coveredStrs;
+                InstructionSmtLibStringss = instStrss;
+            }
+
+            public readonly InstructionGroupedShortestPath Path;
+            public readonly SmtLibString[] CoveredStrings;
+            public readonly InstructionSmtLibStrings[] InstructionSmtLibStringss;
+
+            public SmtLibStringCollection GetSmtLibStringCollection()
+            {
+                var hash = new HashSet<SmtLibString>();
+                return new SmtLibStringCollection(Path, InstructionSmtLibStringss.SelectMany(_ => _.SmtLibStrings).Where(hash.Add).ToArray()) { Id = Path.Id };
+            }
+        }
+
+        struct InstructionSmtLibStrings
+        {
+            public InstructionSmtLibStrings(SmtInstruction inst, SmtLibString[] ss)
+            {
+                Instruction = inst;
+                SmtLibStrings = ss;
+            }
+
+            public readonly SmtInstruction Instruction;
+            public readonly SmtLibString[] SmtLibStrings;
+
+            public bool IsAssertion { get { return Instruction.IsAssertion; } }
+
+            public static InstructionSmtLibStrings New(SmtInstruction inst, SmtLibStringContext ctx)
+            {
+                return new InstructionSmtLibStrings(inst, inst.GetSmtLibStrings(ctx).ToArray());
             }
         }
     }
